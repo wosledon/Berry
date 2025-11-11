@@ -13,11 +13,11 @@ import 'antd/dist/reset.css';
 const qc = new QueryClient();
 
 function ThemedApp() {
-  const { isDark } = useTheme();
+  const { isDark, colors } = useTheme();
   return (
     <ConfigProvider theme={{
       algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
-      token: { borderRadius: 12 }
+      token: { borderRadius: 12, colorPrimary: colors.primary }
     }}>
       <App />
     </ConfigProvider>

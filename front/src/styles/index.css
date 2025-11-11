@@ -11,4 +11,6 @@ body { @apply bg-gray-50 text-gray-800 transition-colors duration-200; }
 .ui-card-header { @apply flex items-center justify-between mb-4; }
 .ui-btn { @apply inline-flex items-center justify-center px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors; }
 .ui-btn-primary { @apply inline-flex items-center justify-center px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow-sm; }
+.btn-primary-dynamic { @apply inline-flex items-center justify-center px-3 py-2 rounded-md text-white text-sm font-medium shadow-sm transition-colors; background-color: var(--primary-600); }
+.btn-primary-dynamic:hover { background-color: var(--primary-700); }
 .ui-switch-btn { @apply cursor-pointer select-none px-2 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition; }

@@ -22,6 +22,6 @@ export async function listUsers(page = 1, size = 20, search?: string, extra?: { 
 }
 
 export async function getUserDetail(id: string) {
-  const resp = await http.get<{ user: User; roles: any[]; directPermissions: string[]; effectivePermissions: string[] }>(`/users/${id}`);
+  const resp = await http.get<{ user: User; roles: any[]; directPermissions: string[]; effectivePermissions: string[] }>(`/Users/Detail/${id}`);
   return resp.data;
 }

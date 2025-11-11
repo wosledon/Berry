@@ -1,21 +1,40 @@
 using Berry.Infrastructure;
 using Berry.Infrastructure.Entities;
 using Berry.Shared.Security;
+using Berry.Shared.Tenancy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Berry.Modules.Rbac;
 
 namespace Berry.Host.Controllers;
 
-public sealed class UsersController(BerryDbContext db, IPermissionsCacheInvalidator cacheInvalidator) : ApiControllerBase
+public sealed class UsersController(BerryDbContext db, IPermissionsCacheInvalidator cacheInvalidator, ITenantContextAccessor tenantAccessor) : ApiControllerBase
 {
     [HttpGet]
     [Permission("users.view")]
-    public async Task<ActionResult<object>> List([FromQuery] int page = 1, [FromQuery] int size = 20, [FromQuery] string? search = null, CancellationToken ct = default)
+    public async Task<ActionResult<object>> List(
+        [FromQuery] int page = 1,
+        [FromQuery] int size = 20,
+        [FromQuery] string? search = null,
+        [FromQuery] string? roleId = null,
+        [FromQuery] string? hasPermission = null,
+        [FromQuery] bool includeDeleted = false,
+        CancellationToken ct = default)
     {
         page = page < 1 ? 1 : page; size = size is < 1 or > 200 ? 20 : size;
-        var q = db.Users.AsNoTracking();
+        var tenantId = tenantAccessor.Context.TenantId;
+        var q = includeDeleted
+            ? db.Users.AsNoTracking().IgnoreQueryFilters().Where(u => tenantId == null || u.TenantId == tenantId)
+            : db.Users.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(search)) q = q.Where(u => u.Username.Contains(search) || (u.DisplayName != null && u.DisplayName.Contains(search)) || (u.Email != null && u.Email.Contains(search)));
+        if (!string.IsNullOrWhiteSpace(roleId))
+            q = q.Where(u => db.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == roleId));
+        if (!string.IsNullOrWhiteSpace(hasPermission))
+        {
+            var perm = hasPermission;
+            q = q.Where(u => db.UserPermissions.Any(up => up.UserId == u.Id && up.PermissionName == perm)
+                             || db.UserRoles.Any(ur => ur.UserId == u.Id && db.RolePermissions.Any(rp => rp.RoleId == ur.RoleId && rp.PermissionName == perm)));
+        }
         var total = await q.CountAsync(ct);
         var items = await q.OrderBy(u => u.Username).Skip((page - 1) * size).Take(size).ToListAsync(ct);
         return Ok(new { items, total, page, size });

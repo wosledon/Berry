@@ -37,6 +37,7 @@ app.UseSerilogRequestLogging();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Berry 框架中间件装配

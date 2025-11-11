@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export function LoginPage() {
-  const { login, setUserId } = useAuth();
+  const { login } = useAuth();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
   const [tenantId, setTenantId] = useState('');
@@ -13,17 +13,7 @@ export function LoginPage() {
   const onSubmit = async () => {
     setError('');
     const ok = await login(username, password, tenantId || undefined);
-    if (ok) {
-      nav('/');
-    } else {
-      // 回退到 Mock（后端未实现 /auth/login 时）
-      if (username) {
-        setUserId(username);
-        nav('/');
-      } else {
-        setError('登录失败');
-      }
-    }
+    if (ok) nav('/'); else setError('登录失败');
   };
 
   return (
@@ -37,7 +27,7 @@ export function LoginPage() {
       <input value={tenantId} onChange={e => setTenantId(e.target.value)} className="w-full border px-3 py-2 rounded mb-4" />
       {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
       <button onClick={onSubmit} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">登录</button>
-      <p className="text-xs text-gray-500 mt-3">后端未准备好时会自动回退为 Mock（仅设置 userId）。</p>
+      <p className="text-xs text-gray-500 mt-3">提示：默认种子账号 admin / ChangeMe123!，租户 public。</p>
     </div>
   );
 }

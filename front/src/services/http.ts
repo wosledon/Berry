@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getAuthState } from './local';
 
 const instance = axios.create({
-  baseURL: '/api',
+  baseURL: '/',
   timeout: 15000
 });
 

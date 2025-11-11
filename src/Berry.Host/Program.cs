@@ -39,8 +39,34 @@ public static class BerryExtensions
         })
         .AddApplicationPart(typeof(Berry.Host.Controllers.ApiControllerBase).Assembly); // 引入本程序集内置控制器
 
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            var cfg = configuration.GetSection("Jwt");
+            var key = cfg.GetValue<string>("Key") ?? "Dev_Insecure_Key_ChangeMe_123456";
+            var issuer = cfg.GetValue<string>("Issuer") ?? "berry.dev";
+            var audience = cfg.GetValue<string>("Audience") ?? "berry.clients";
+            options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ValidIssuer = issuer,
+                ValidAudience = audience,
+                IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(key)),
+                ClockSkew = TimeSpan.FromMinutes(2)
+            };
+        });
+
         services.AddAuthorization();
         services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, Berry.Host.Authorization.PermissionAuthorizationHandler>();
+
+        // 开发场景：注册启动种子
+        services.AddHostedService<Berry.Host.StartupSeedHostedService>();
 
         return services;
     }
@@ -70,6 +96,10 @@ public static class BerryExtensions
     public static WebApplication UseBerry(this WebApplication app)
     {
         var manager = app.Services.GetRequiredService<IModuleManager>();
+
+        // 认证与授权
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         foreach (var module in manager.Modules)
         {

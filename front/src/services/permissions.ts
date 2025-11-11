@@ -1,6 +1,6 @@
 import http from './http';
 
-export interface Permission { id: string; name: string; description?: string }
+export interface Permission { id: string; name: string; description?: string; createdAt?: string; isDeleted?: boolean }
 
 export async function listPermissions(page = 1, size = 20, search?: string) {
   const resp = await http.get('/permissions', { params: { page, size, search } });

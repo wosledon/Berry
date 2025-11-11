@@ -1,7 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ReactNode, useMemo } from 'react';
 import clsx from 'clsx';
 import { usePermissions } from '../context/PermissionsContext';
+import { useAuth } from '../context/AuthContext';
 
 const menus = [
   { path: '/', title: 'Dashboard' },
@@ -14,6 +15,8 @@ const menus = [
 export function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { hasAny } = usePermissions();
+  const { logout, tenantId } = useAuth();
+  const nav = useNavigate();
   const visibleMenus = useMemo(() => menus.filter(m => !m.any || hasAny(m.any)), [hasAny]);
   return (
     <div className="min-h-screen grid grid-cols-[240px_1fr]">
@@ -29,6 +32,10 @@ export function Layout({ children }: { children: ReactNode }) {
         </nav>
       </aside>
       <main className="p-6">
+        <div className="flex justify-end mb-4 text-sm text-gray-600">
+          <span className="mr-3">Tenant: {tenantId ?? '-'}</span>
+          <button className="border px-2 py-1 rounded" onClick={() => { logout(); nav('/login'); }}>退出</button>
+        </div>
         {children}
       </main>
     </div>

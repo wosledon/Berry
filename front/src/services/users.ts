@@ -5,6 +5,8 @@ export interface User {
   username: string;
   displayName?: string;
   email?: string;
+  createdAt?: string;
+  isDeleted?: boolean;
 }
 
 export interface Paged<T> {
@@ -14,8 +16,8 @@ export interface Paged<T> {
   size: number;
 }
 
-export async function listUsers(page = 1, size = 20, search?: string) {
-  const resp = await http.get<Paged<User>>('/users', { params: { page, size, search } });
+export async function listUsers(page = 1, size = 20, search?: string, extra?: { roleId?: string; hasPermission?: string; includeDeleted?: boolean }) {
+  const resp = await http.get<Paged<User>>('/users', { params: { page, size, search, ...extra } });
   return resp.data;
 }
 

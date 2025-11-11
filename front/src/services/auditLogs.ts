@@ -9,6 +9,7 @@ export interface AuditLog {
   createdAt: string;
   ip?: string;
   userAgent?: string;
+  isDeleted?: boolean;
 }
 
 export async function listAuditLogs(page = 1, size = 20, method?: string, status?: number) {

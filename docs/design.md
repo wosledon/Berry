@@ -27,7 +27,7 @@
 | Web 框架 | ASP.NET Core | 最小宿主模型，使用原生中间件管线 |
 | 数据库 | SQLite / PostgreSQL | Dev/单机用 SQLite；生产推荐 PostgreSQL |
 | ORM | Entity Framework Core | 统一数据访问；支持迁移、种子数据 |
-| 前端 | React + TypeScript + Vite + TailwindCSS | 快速开发 + 组件化 + 原子化样式 |
+| 前端 | React + TypeScript + Vite + TailwindCSS | 快速开发 + 组件化 + 原子化样式 + 卡片简约风格 |
 | 缓存 | Redis / 内存 (MemoryCache) | 读写热点、分布式锁、会话；断路&降级 |
 | 消息队列 | RabbitMQ / 内存 Channel | 事件驱动、异步任务；降级到 Channel + 背压控制 |
 | 日志 | Serilog | 多 Sink (Console, File, Seq, Elastic 可扩展) |
@@ -241,30 +241,3 @@ tests/
 
 ---
 本文档为动态演进文档，随着实现细节与业务需求变化需持续更新版本号与变更日志。
-当前版本：**0.2.0** （见 `docs/CHANGELOG.md`）
-下一步：按 Roadmap Phase 2 推进（User/Role 实体与 API、JWT 认证、前端脚手架）。
-
-## 使用示例
-
-参见 `samples/Berry.Sample/Program.cs`：
-
-```csharp
-using Berry.Host;
-using Serilog;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Host.UseSerilog(...);
-builder.Services.AddControllers();
-
-// 框架模块一键装配
-builder.Services.AddBerry(builder.Configuration);
-
-var app = builder.Build();
-
-// 框架中间件一键应用
-app.UseBerry();
-
-app.MapControllers();
-app.Run();
-```

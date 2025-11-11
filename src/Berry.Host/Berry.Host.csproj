@@ -8,6 +8,9 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Berry.Shared\Berry.Shared.csproj" />
     <ProjectReference Include="..\Berry.Infrastructure\Berry.Infrastructure.csproj" />
     <ProjectReference Include="..\Berry.Modules.Caching\Berry.Modules.Caching.csproj" />

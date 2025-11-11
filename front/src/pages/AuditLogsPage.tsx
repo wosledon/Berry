@@ -1,44 +1,37 @@
-import { useQuery } from '@tanstack/react-query';
-import { listAuditLogs } from '../services/auditLogs';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Input, Select, Tag } from 'antd';
+import { listAuditLogs, AuditLog } from '../services/auditLogs';
+import { PagedTable } from '../components/PagedTable';
+import type { ColumnsType } from 'antd/es/table';
 
 export function AuditLogsPage() {
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useQuery({
-    queryKey: ['audits', page],
-    queryFn: () => listAuditLogs(page, 20)
-  });
+  const [method, setMethod] = useState<string | undefined>();
+  const [status, setStatus] = useState<number | undefined>();
+  const columns: ColumnsType<AuditLog> = useMemo(() => ([
+    { title: 'Time', dataIndex: 'createdAt', render: (v: string) => new Date(v).toLocaleString() },
+    { title: 'Method', dataIndex: 'method' },
+    { title: 'Path', dataIndex: 'path', ellipsis: true },
+    { title: 'Status', dataIndex: 'statusCode' },
+    { title: 'Elapsed', dataIndex: 'elapsedMs', render: (v: number) => `${v} ms` },
+    { title: 'Deleted', dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+  ]), []);
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">Audit Logs</h1>
-      {isLoading && <div>Loading...</div>}
-      <table className="min-w-full text-sm bg-white shadow border">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="p-2">Time</th>
-            <th className="p-2">Method</th>
-            <th className="p-2">Path</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Elapsed</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data?.items.map(a => (
-            <tr key={a.id} className="border-t">
-              <td className="p-2">{new Date(a.createdAt).toLocaleString()}</td>
-              <td className="p-2">{a.method}</td>
-              <td className="p-2">{a.path}</td>
-              <td className="p-2">{a.statusCode}</td>
-              <td className="p-2">{a.elapsedMs} ms</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mt-4 flex gap-2">
-        <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded border disabled:opacity-50">Prev</button>
-        <span>Page {page}</span>
-        <button disabled={(data?.items.length ?? 0) < 20} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded border disabled:opacity-50">Next</button>
+      <div className="flex items-center justify-between mb-3 gap-3">
+        <h1 className="text-xl font-semibold">Audit Logs</h1>
+        <div className="flex items-center gap-2">
+          <Select allowClear placeholder="Method" style={{ width: 120 }} value={method} onChange={setMethod}
+                  options={['GET','POST','PUT','PATCH','DELETE'].map(m => ({ value: m, label: m }))} />
+          <Input allowClear placeholder="Status" style={{ width: 100 }} value={status?.toString()}
+                 onChange={e => setStatus(e.target.value ? parseInt(e.target.value) : undefined)} />
+        </div>
       </div>
+      <PagedTable<AuditLog>
+        columns={columns}
+        fetch={({ page, size }) => listAuditLogs(page, size, method, status)}
+        dependencies={[method, status]}
+      />
     </div>
   );
 }

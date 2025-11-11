@@ -1,6 +1,6 @@
 import http from './http';
 
-export interface Role { id: string; name: string; description?: string }
+export interface Role { id: string; name: string; description?: string; createdAt?: string; isDeleted?: boolean }
 
 export async function listRoles(page = 1, size = 20, search?: string) {
   const resp = await http.get('/roles', { params: { page, size, search } });

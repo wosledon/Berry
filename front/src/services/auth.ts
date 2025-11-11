@@ -1,10 +1,14 @@
-import http from './http';
+import { apiClient } from './openapi';
+import type { components, paths } from '../types/api';
 
-interface LoginRequest { username: string; password: string; tenantId?: string }
-interface LoginResponse { token: string; userId: string; tenantId?: string }
+export type LoginRequest = components['schemas']['LoginRequest'];
+export type LoginResponse = components['schemas']['LoginResponse'];
 
-export async function login(data: LoginRequest) {
-  // 后端需实现 /api/auth/login 返回 { token, userId, tenantId }
-  const resp = await http.post<LoginResponse>('/auth/login', data);
-  return resp.data;
+// 路径 key 匹配 swagger 生成："/api/Auth/login"
+export async function login(data: LoginRequest): Promise<LoginResponse> {
+  // openapi-fetch 泛型：<路径字符串, 方法>
+  const { data: resp, error } = await apiClient.POST('/api/Auth/login', { body: data });
+  if (error) throw error;
+  const content = (resp as any)?.['application/json'] || (resp as any)?.['text/json'] || (resp as any)?.['text/plain'] || resp;
+  return content as LoginResponse;
 }

@@ -1,13 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listPermissions, upsertPermission, syncPermissions } from '../services/permissions';
-import { useState } from 'react';
+import { listPermissions, upsertPermission, syncPermissions, Permission } from '../services/permissions';
+import { useMemo, useState } from 'react';
+import { Input, Tag } from 'antd';
+import { PagedTable } from '../components/PagedTable';
+import type { ColumnsType } from 'antd/es/table';
 
 export function PermissionsPage() {
   const [page, setPage] = useState(1);
   const qc = useQueryClient();
+  const [search, setSearch] = useState('');
   const { data, isLoading } = useQuery({
-    queryKey: ['permissions', page],
-    queryFn: () => listPermissions(page, 20)
+    queryKey: ['permissions', page, search],
+    queryFn: () => listPermissions(page, 20, search)
   });
 
   const upsert = useMutation({
@@ -20,34 +24,28 @@ export function PermissionsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['permissions'] })
   });
 
+  const columns: ColumnsType<Permission> = useMemo(() => ([
+    { title: 'Name', dataIndex: 'name' },
+    { title: 'Description', dataIndex: 'description' },
+    { title: 'Created At', dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
+    { title: 'Deleted', dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+  ]), []);
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-3">
         <h1 className="text-xl font-semibold">Permissions</h1>
         <button onClick={() => sync.mutate()} className="px-3 py-1 rounded border">Sync</button>
       </div>
-      {isLoading && <div>Loading...</div>}
-      <table className="min-w-full text-sm bg-white shadow border">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="p-2">Name</th>
-            <th className="p-2">Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data?.items.map(p => (
-            <tr key={p.id} className="border-t">
-              <td className="p-2">{p.name}</td>
-              <td className="p-2">{p.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mt-4 flex gap-2">
-        <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded border disabled:opacity-50">Prev</button>
-        <span>Page {page}</span>
-        <button disabled={(data?.items.length ?? 0) < 20} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded border disabled:opacity-50">Next</button>
-      </div>
+      <PagedTable<Permission>
+        columns={columns}
+        fetch={({ page, size, filters }) => listPermissions(page, size, filters.search as string)}
+        initialFilters={{ search }}
+        renderFilters={(f, setF) => (
+          <Input.Search allowClear placeholder="搜索权限名/描述" style={{ width: 320 }}
+                        onSearch={v => { setPage(1); setSearch(v); setF({ ...f, search: v }); }} />
+        )}
+      />
       <div className="mt-6 p-4 border rounded bg-white">
         <h2 className="font-medium mb-2">Upsert Permission</h2>
         <UpsertForm onSubmit={(name, desc) => upsert.mutate({ name, description: desc })} />

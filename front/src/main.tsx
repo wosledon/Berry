@@ -6,18 +6,35 @@ import App from './pages/App';
 import './styles/index.css';
 import { AuthProvider } from './context/AuthContext';
 import { PermissionsProvider } from './context/PermissionsContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { ConfigProvider, theme as antdTheme } from 'antd';
+import 'antd/dist/reset.css';
 
 const qc = new QueryClient();
+
+function ThemedApp() {
+  const { isDark } = useTheme();
+  return (
+    <ConfigProvider theme={{
+      algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+      token: { borderRadius: 12 }
+    }}>
+      <App />
+    </ConfigProvider>
+  );
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={qc}>
-        <AuthProvider>
-          <PermissionsProvider>
-            <App />
-          </PermissionsProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <PermissionsProvider>
+              <ThemedApp />
+            </PermissionsProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>

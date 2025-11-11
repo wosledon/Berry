@@ -6,7 +6,7 @@ export function LoginPage() {
   const { login } = useAuth();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
-  const [tenantId, setTenantId] = useState('');
+  const [tenantId, setTenantId] = useState('public');
   const [error, setError] = useState('');
   const nav = useNavigate();
 
@@ -23,7 +23,7 @@ export function LoginPage() {
       <input value={username} onChange={e => setUsername(e.target.value)} className="w-full border px-3 py-2 rounded mb-3" />
       <label className="block text-sm font-medium mb-1">密码</label>
       <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border px-3 py-2 rounded mb-3" />
-      <label className="block text-sm font-medium mb-1">租户（可选）</label>
+  <label className="block text-sm font-medium mb-1">租户</label>
       <input value={tenantId} onChange={e => setTenantId(e.target.value)} className="w-full border px-3 py-2 rounded mb-4" />
       {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
       <button onClick={onSubmit} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">登录</button>

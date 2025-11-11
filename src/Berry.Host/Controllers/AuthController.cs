@@ -33,7 +33,10 @@ public sealed class AuthController(BerryDbContext db, IConfiguration configurati
             if (Request.Headers.TryGetValue("X-Tenant", out var vals)) tenantId = vals.FirstOrDefault();
         }
         if (string.IsNullOrWhiteSpace(tenantId))
-            return BadRequest(new { message = "TenantId is required" });
+        {
+            // 再次回退到配置默认租户（开发体验友好）
+            tenantId = configuration["Seed:TenantId"] ?? "public";
+        }
 
         var user = await db.Users.AsNoTracking().IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Username == input.Username, ct);

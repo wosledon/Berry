@@ -68,7 +68,8 @@ public sealed class BerryDbContext : DbContext
         modelBuilder.Entity<Role>(b =>
         {
             b.HasKey(x => x.Id);
-            b.HasIndex(x => x.Name).IsUnique();
+            // 角色名称按租户唯一
+            b.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
             b.Property(x => x.Name).HasMaxLength(128).IsRequired();
             b.Property(x => x.Description).HasMaxLength(256);
         });
@@ -76,7 +77,8 @@ public sealed class BerryDbContext : DbContext
         modelBuilder.Entity<User>(b =>
         {
             b.HasKey(x => x.Id);
-            b.HasIndex(x => x.Username).IsUnique();
+            // 用户名按租户唯一
+            b.HasIndex(x => new { x.TenantId, x.Username }).IsUnique();
             b.Property(x => x.Username).HasMaxLength(128).IsRequired();
             b.Property(x => x.DisplayName).HasMaxLength(128);
             b.Property(x => x.Email).HasMaxLength(256);

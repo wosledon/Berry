@@ -1,72 +1,118 @@
-import { useQuery } from '@tanstack/react-query';
-import { listUsers, User } from '../services/users';
-import { useEffect, useMemo, useState } from 'react';
-import { Table, Input, Select, Switch, Tag } from 'antd';
+import { useMutation } from '@tanstack/react-query';
+import { listUsers, User, createUser, updateUser, deleteUser } from '../services/users';
+import { useMemo, useState } from 'react';
+import { Input, Modal, Form, message, Tag, Button, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { listRoles, Role } from '../services/roles';
+import { PagedTable, PagedResult } from '../components/PagedTable';
 
 export function UsersPage() {
-  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [roleId, setRoleId] = useState<string | undefined>();
-  const [hasPermission, setHasPermission] = useState<string | undefined>();
-  const [includeDeleted, setIncludeDeleted] = useState(false);
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['users', page, search, roleId, hasPermission, includeDeleted],
-    queryFn: () => listUsers({
-      page,
-      size: 20,
-      search,
-    })
-  });
-
-  const rolesQuery = useQuery({
-    queryKey: ['roles', 'for-filter'],
-    queryFn: async () => {
-      const r = await listRoles({ page: 1, size: 100 });
-      return r.items as Role[];
-    }
-  });
-
-  useEffect(() => { setPage(1); refetch(); }, [search, roleId, hasPermission, includeDeleted]);
+  const [reloadTick, setReloadTick] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<User | null>(null);
+  const [form] = Form.useForm<{ username: string; displayName?: string; email?: string }>();
 
   const columns: ColumnsType<User> = useMemo(() => ([
     { title: 'Username', dataIndex: 'username' },
     { title: 'Display Name', dataIndex: 'displayName' },
     { title: 'Email', dataIndex: 'email' },
-    { title: 'Created At', dataIndex: 'createdAt', render: (v: string) => v ? new Date(v).toLocaleString() : '-' },
-    { title: 'Deleted', dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag> No</Tag> },
+    { title: 'Created At', dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
+    { title: 'Deleted', dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+    {
+      title: 'Actions',
+      width: 160,
+      render: (_, record) => (
+        <div className="flex items-center gap-2">
+          <Button size="small" onClick={() => onEdit(record)}>Edit</Button>
+          <Popconfirm title="Delete this user?" onConfirm={() => onDelete(record.id!)}>
+            <Button size="small" danger>Delete</Button>
+          </Popconfirm>
+        </div>
+      )
+    }
   ]), []);
+
+  const createMut = useMutation({
+    mutationFn: (payload: User) => createUser(payload),
+    onSuccess: () => { message.success('Created'); setReloadTick(t => t + 1); setModalOpen(false); }
+  });
+  const updateMut = useMutation({
+    mutationFn: (vars: { id: string; payload: User }) => updateUser(vars.id, vars.payload),
+    onSuccess: () => { message.success('Updated'); setReloadTick(t => t + 1); setModalOpen(false); }
+  });
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteUser(id),
+    onSuccess: () => { message.success('Deleted'); setReloadTick(t => t + 1); }
+  });
+
+  function onNew() {
+    setEditing(null);
+    form.resetFields();
+    setModalOpen(true);
+  }
+  function onEdit(u: User) {
+    setEditing(u);
+    form.setFieldsValue({ username: u.username ?? '', displayName: u.displayName ?? '', email: u.email ?? '' });
+    setModalOpen(true);
+  }
+  async function onDelete(id: string) {
+    await deleteMut.mutateAsync(id);
+  }
+  async function onDeleteSelected() {
+    for (const id of selectedIds) await deleteMut.mutateAsync(id);
+    setSelectedIds([]);
+  }
+  function onSubmit() {
+    form.validateFields().then(values => {
+      const payload: User = { username: values.username, displayName: values.displayName, email: values.email } as User;
+      if (editing?.id) updateMut.mutate({ id: editing.id!, payload }); else createMut.mutate(payload);
+    });
+  }
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-3 gap-3">
-        <h1 className="text-xl font-semibold">Users</h1>
-        <div className="flex items-center gap-2">
-          <Input.Search allowClear placeholder="搜索用户名/姓名/邮箱" onSearch={v => setSearch(v)} style={{ width: 280 }} />
-          <Select
-            allowClear
-            placeholder="角色筛选"
-            style={{ width: 200 }}
-            loading={rolesQuery.isLoading}
-            options={(rolesQuery.data ?? []).map(r => ({ value: r.id, label: r.name }))}
-            value={roleId}
-            onChange={v => setRoleId(v)}
-          />
-          <Input allowClear placeholder="拥有权限" value={hasPermission} onChange={e => setHasPermission(e.target.value)} style={{ width: 220 }} />
-          <div className="flex items-center gap-1">
-            <span>含已删除</span>
-            <Switch checked={includeDeleted} onChange={setIncludeDeleted} />
-          </div>
-        </div>
-      </div>
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        dataSource={data?.items ?? []}
+      <PagedTable<User>
         columns={columns}
-        pagination={{ current: page, pageSize: 20, total: data?.total ?? 0, onChange: p => setPage(p) }}
+        fetch={({ page, size, filters }) => listUsers({ page, size, search: filters.search }) as Promise<PagedResult<User>>}
+        initialFilters={{ search }}
+        dependencies={[reloadTick]}
+        rowSelectionEnabled
+        onSelectionChange={(keys) => setSelectedIds(keys)}
+        toolbar={(
+          <div className="flex items-center gap-2">
+            <Button type="primary" onClick={onNew}>New User</Button>
+            <Input.Search allowClear placeholder="搜索用户名/姓名/邮箱" onSearch={v => { setSearch(v); }} style={{ width: 280 }} />
+            {selectedIds.length > 0 && (
+              <Popconfirm title={`Delete ${selectedIds.length} users?`} onConfirm={onDeleteSelected}>
+                <Button danger>Delete Selected</Button>
+              </Popconfirm>
+            )}
+          </div>
+        )}
       />
+
+      <Modal
+        title={editing ? 'Edit User' : 'New User'}
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={onSubmit}
+        confirmLoading={createMut.isPending || updateMut.isPending}
+        destroyOnClose
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item label="Username" name="username" rules={[{ required: true, message: 'Required' }]}>
+            <Input placeholder="username" />
+          </Form.Item>
+          <Form.Item label="Display Name" name="displayName">
+            <Input placeholder="display name" />
+          </Form.Item>
+          <Form.Item label="Email" name="email" rules={[{ type: 'email', message: 'Invalid email' }]}>
+            <Input placeholder="email" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

@@ -23,3 +23,8 @@ export async function syncPermissions() {
   if (error) throw error;
   return (data as any)?.['application/json'] ?? (data as any);
 }
+
+// 软删除权限（后端无明确删除接口，使用 Upsert 标记 isDeleted）
+export async function softDeletePermission(name: string) {
+  return upsertPermission(name, { name, isDeleted: true } as Permission);
+}

@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { listUsers, User, createUser, updateUser, deleteUser } from '../services/users';
+import { listUsers, User, createUser, updateUser, deleteUser, bindUserRoles, unbindUserRoles, getUserDetail } from '../services/users';
 import { useMemo, useState } from 'react';
 import { Input, Modal, Form, message, Tag, Button, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -13,6 +13,11 @@ export function UsersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
   const [form] = Form.useForm<{ username: string; displayName?: string; email?: string }>();
+  // 分配角色弹窗状态
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignTarget, setAssignTarget] = useState<User | null>(null);
+  const [roleSearch, setRoleSearch] = useState('');
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 
   const columns: ColumnsType<User> = useMemo(() => ([
     { title: 'Username', dataIndex: 'username' },
@@ -25,6 +30,7 @@ export function UsersPage() {
       width: 160,
       render: (_, record) => (
         <div className="flex items-center gap-2">
+          <Button size="small" onClick={() => onManageRoles(record)}>Manage Roles</Button>
           <Button size="small" onClick={() => onEdit(record)}>Edit</Button>
           <Popconfirm title="Delete this user?" onConfirm={() => onDelete(record.id!)}>
             <Button size="small" danger>Delete</Button>
@@ -57,6 +63,18 @@ export function UsersPage() {
     form.setFieldsValue({ username: u.username ?? '', displayName: u.displayName ?? '', email: u.email ?? '' });
     setModalOpen(true);
   }
+  function onManageRoles(u: User) {
+    setAssignTarget(u);
+    setSelectedRoleIds([]);
+    setRoleSearch('');
+    setAssignOpen(true);
+    if (u.id) {
+      getUserDetail(u.id).then((detail: any) => {
+        const ids = Array.isArray(detail?.roles) ? detail.roles.map((r: any) => r?.id).filter((x: any) => !!x) : [];
+        setSelectedRoleIds(ids);
+      }).catch(() => { /* ignore */ });
+    }
+  }
   async function onDelete(id: string) {
     await deleteMut.mutateAsync(id);
   }
@@ -69,6 +87,22 @@ export function UsersPage() {
       const payload: User = { username: values.username, displayName: values.displayName, email: values.email } as User;
       if (editing?.id) updateMut.mutate({ id: editing.id!, payload }); else createMut.mutate(payload);
     });
+  }
+
+  // 分配角色 - 绑定/解绑
+  async function onBindRoles() {
+    if (!assignTarget?.id) return;
+    if (selectedRoleIds.length === 0) { message.warning('请选择要绑定的角色'); return; }
+    await bindUserRoles(assignTarget.id!, selectedRoleIds);
+    message.success('已绑定角色');
+    setAssignOpen(false);
+  }
+  async function onUnbindRoles() {
+    if (!assignTarget?.id) return;
+    if (selectedRoleIds.length === 0) { message.warning('请选择要解绑的角色'); return; }
+    await unbindUserRoles(assignTarget.id!, selectedRoleIds);
+    message.success('已解绑角色');
+    setAssignOpen(false);
   }
 
   return (
@@ -112,6 +146,41 @@ export function UsersPage() {
             <Input placeholder="email" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title={`Manage Roles${assignTarget?.username ? ` - ${assignTarget.username}` : ''}`}
+        open={assignOpen}
+        onCancel={() => setAssignOpen(false)}
+        footer={(
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button onClick={onUnbindRoles} danger disabled={!assignTarget?.id}>Unbind Selected</Button>
+              <Button type="primary" onClick={onBindRoles} disabled={!assignTarget?.id}>Bind Selected</Button>
+            </div>
+            <div className="opacity-70">已选 {selectedRoleIds.length} 项</div>
+          </div>
+        )}
+        width={720}
+        destroyOnClose
+      >
+        <div className="mb-2">
+          <Input.Search allowClear placeholder="搜索角色名/描述" style={{ width: 320 }} onSearch={v => setRoleSearch(v)} />
+        </div>
+        <PagedTable<Role>
+          columns={useMemo<ColumnsType<Role>>(() => ([
+            { title: 'Name', dataIndex: 'name' },
+            { title: 'Description', dataIndex: 'description' },
+            { title: 'Created At', dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
+          ]), [])}
+          fetch={({ page, size, filters }) => listRoles({ page, size, search: filters.search }) as Promise<PagedResult<Role>>}
+          initialFilters={{ search: roleSearch }}
+          dependencies={[roleSearch]}
+          rowSelectionEnabled
+          selectedRowKeys={selectedRoleIds}
+          onSelectionChange={(keys) => setSelectedRoleIds(keys)}
+          pageSize={10}
+        />
       </Modal>
     </div>
   );

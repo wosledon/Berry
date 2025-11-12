@@ -16,16 +16,19 @@ interface PagedTableProps<T> {
   renderFilters?: (filters: Record<string, any>, setFilters: (f: Record<string, any>) => void) => React.ReactNode;
   rowSelectionEnabled?: boolean;
   onSelectionChange?: (selectedKeys: string[], selectedRows: T[]) => void;
+  selectedRowKeys?: string[]; // 受控选择
+  defaultSelectedRowKeys?: string[]; // 非受控初始选择
+  rowKeyFn?: (record: T) => string | number; // 自定义 rowKey
 }
 
 export function PagedTable<T extends { id?: string | null }>(props: PagedTableProps<T>) {
-  const { columns, fetch, pageSize = 20, initialFilters = {}, dependencies = [], toolbar, onDataLoaded, renderFilters, rowSelectionEnabled, onSelectionChange } = props;
+  const { columns, fetch, pageSize = 20, initialFilters = {}, dependencies = [], toolbar, onDataLoaded, renderFilters, rowSelectionEnabled, onSelectionChange, selectedRowKeys: controlledKeys, defaultSelectedRowKeys, rowKeyFn } = props;
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PagedResult<T>>();
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState<Record<string, any>>(initialFilters);
   const debouncedFilters = useDebounce(filters, 400);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [uncontrolledKeys, setUncontrolledKeys] = useState<React.Key[]>(defaultSelectedRowKeys ?? []);
 
   async function load(p = page, f = debouncedFilters) {
     setLoading(true);
@@ -50,13 +53,16 @@ export function PagedTable<T extends { id?: string | null }>(props: PagedTablePr
         {renderFilters?.(filters, setFilters)}
       </div>
       <Table
-        rowKey={record => record.id ?? ''}
+        rowKey={record => (rowKeyFn ? rowKeyFn(record) : (record as any).id ?? '')}
         loading={loading}
         dataSource={data?.items ?? []}
         columns={columns}
         rowSelection={rowSelectionEnabled ? {
-          selectedRowKeys,
-          onChange: (keys, rows) => { setSelectedRowKeys(keys); onSelectionChange?.(keys as string[], rows as T[]); }
+          selectedRowKeys: controlledKeys ?? uncontrolledKeys,
+          onChange: (keys, rows) => {
+            if (controlledKeys === undefined) setUncontrolledKeys(keys);
+            onSelectionChange?.(keys as string[], rows as T[]);
+          }
         } : undefined}
         pagination={{
           current: page,

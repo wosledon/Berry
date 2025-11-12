@@ -80,16 +80,30 @@ public sealed class RolesController(BerryDbContext db, IPermissionsCacheInvalida
         var role = await db.Roles.FirstOrDefaultAsync(r => r.Id == id, ct);
         if (role == null) return NotFound();
         var names = permissions.Where(p => !string.IsNullOrWhiteSpace(p)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        if (names.Count == 0) return Ok(new { affected = 0 });
-        var existing = await db.RolePermissions.Where(rp => rp.RoleId == id).Select(rp => rp.PermissionName).ToListAsync(ct);
-        var toAdd = names.Except(existing, StringComparer.OrdinalIgnoreCase).ToList();
+        if (names.Count == 0) return Ok(new { added = 0, reactivated = 0 });
+
+        // 查找已存在（包含软删除）的权限关系，避免唯一键冲突
+        var existingAll = await db.RolePermissions
+            .IgnoreQueryFilters()
+            .Where(rp => rp.RoleId == id && names.Contains(rp.PermissionName))
+            .ToListAsync(ct);
+
+        // 恢复软删除
+        var toReactivate = existingAll.Where(rp => rp.IsDeleted).ToList();
+        foreach (var rp in toReactivate) rp.IsDeleted = false;
+
+        // 仅对完全不存在的新增
+        var existingNames = existingAll.Select(rp => rp.PermissionName).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var toAdd = names.Where(n => !existingNames.Contains(n)).ToList();
         foreach (var p in toAdd)
         {
             await db.RolePermissions.AddAsync(new RolePermission { Id = Guid.NewGuid().ToString("N"), RoleId = id, PermissionName = p }, ct);
         }
-    if (toAdd.Count > 0) await db.SaveChangesAsync(ct);
-    await cacheInvalidator.InvalidateUsersForRoleAsync(id, ct);
-        return Ok(new { added = toAdd.Count });
+
+        var affected = toReactivate.Count + toAdd.Count;
+        if (affected > 0) await db.SaveChangesAsync(ct);
+        await cacheInvalidator.InvalidateUsersForRoleAsync(id, ct);
+        return Ok(new { added = toAdd.Count, reactivated = toReactivate.Count });
     }
 
     // 移除角色上的权限

@@ -141,16 +141,30 @@ public sealed class UsersController(BerryDbContext db, IPermissionsCacheInvalida
     public async Task<ActionResult<object>> BindRoles(string id, [FromBody] IEnumerable<string> roleIds, CancellationToken ct)
     {
         var ids = roleIds.Where(r => !string.IsNullOrWhiteSpace(r)).Distinct().ToList();
-        if (ids.Count == 0) return Ok(new { added = 0 });
-        var existing = await db.UserRoles.Where(ur => ur.UserId == id).Select(ur => ur.RoleId).ToListAsync(ct);
-        var toAdd = ids.Except(existing).ToList();
-        foreach (var rid in toAdd)
+        if (ids.Count == 0) return Ok(new { added = 0, reactivated = 0 });
+
+        // 查找所有已存在（包含软删除）的关系，避免唯一键冲突
+        var existingAll = await db.UserRoles
+            .IgnoreQueryFilters()
+            .Where(ur => ur.UserId == id && ids.Contains(ur.RoleId))
+            .ToListAsync(ct);
+
+        // 恢复软删除的关系
+        var toReactivate = existingAll.Where(ur => ur.IsDeleted).ToList();
+        foreach (var ur in toReactivate) ur.IsDeleted = false;
+
+        // 仅为完全不存在的关系新增记录
+        var existingIds = existingAll.Select(ur => ur.RoleId).ToHashSet();
+        var toAddIds = ids.Where(rid => !existingIds.Contains(rid)).ToList();
+        foreach (var rid in toAddIds)
         {
             await db.UserRoles.AddAsync(new UserRole { Id = Guid.NewGuid().ToString("N"), UserId = id, RoleId = rid }, ct);
         }
-    if (toAdd.Count > 0) await db.SaveChangesAsync(ct);
-    await cacheInvalidator.InvalidateUserAsync(id, ct);
-        return Ok(new { added = toAdd.Count });
+
+        var affected = toReactivate.Count + toAddIds.Count;
+        if (affected > 0) await db.SaveChangesAsync(ct);
+        await cacheInvalidator.InvalidateUserAsync(id, ct);
+        return Ok(new { added = toAddIds.Count, reactivated = toReactivate.Count });
     }
 
     // 为用户解绑角色

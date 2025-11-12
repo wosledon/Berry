@@ -1,27 +1,18 @@
-import http from './http';
+import { apiClient } from './openapi';
+import type { components, paths } from '../types/api';
 
-export interface User {
-  id: string;
-  username: string;
-  displayName?: string;
-  email?: string;
-  createdAt?: string;
-  isDeleted?: boolean;
+export type User = components['schemas']['User'];
+
+// 用户列表
+export async function listUsers(params: paths['/api/Users/List']['get']['parameters']['query']) {
+  const { data, error } = await apiClient.GET('/api/Users/List', { params: { query: params } });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }
 
-export interface Paged<T> {
-  items: T[];
-  total: number;
-  page: number;
-  size: number;
-}
-
-export async function listUsers(page = 1, size = 20, search?: string, extra?: { roleId?: string; hasPermission?: string; includeDeleted?: boolean }) {
-  const resp = await http.get<Paged<User>>('/users', { params: { page, size, search, ...extra } });
-  return resp.data;
-}
-
+// 用户明细
 export async function getUserDetail(id: string) {
-  const resp = await http.get<{ user: User; roles: any[]; directPermissions: string[]; effectivePermissions: string[] }>(`/Users/Detail/${id}`);
-  return resp.data;
+  const { data, error } = await apiClient.GET('/api/Users/Detail/{id}', { params: { path: { id } } });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }

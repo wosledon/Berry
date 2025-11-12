@@ -21,7 +21,11 @@ export function RolesPage() {
       </div>
       <PagedTable<Role>
         columns={columns}
-        fetch={({ page, size, filters }) => listRoles(page, size, filters.search as string)}
+        fetch={({ page, size, filters }) => listRoles({
+          page,
+          size,
+          search: filters?.search,
+        })}
         pageSize={20}
         initialFilters={{ search }}
         renderFilters={(f, setF) => (

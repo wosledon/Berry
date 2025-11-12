@@ -15,10 +15,12 @@
     "antd": "^5.28.1",
     "axios": "^1.6.8",
     "clsx": "^2.1.0",
+    "i18next": "^25.6.2",
     "openapi-fetch": "^0.15.0",
     "openapi-typescript": "^7.10.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-i18next": "^16.2.4",
     "react-router-dom": "^6.23.1"
   },
   "devDependencies": {

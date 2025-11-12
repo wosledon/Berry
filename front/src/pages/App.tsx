@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import '../i18n';
 import { Layout } from '../components/Layout';
 import { Dashboard } from './Dashboard';
 import { UsersPage } from './UsersPage';

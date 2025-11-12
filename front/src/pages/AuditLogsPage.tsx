@@ -29,8 +29,14 @@ export function AuditLogsPage() {
       </div>
       <PagedTable<AuditLog>
         columns={columns}
-        fetch={({ page, size }) => listAuditLogs(page, size, method, status)}
+        fetch={({ page, size, filters }) => listAuditLogs({
+          page,
+          size,
+          method: filters?.method,
+          status: filters?.status,
+        })}
         dependencies={[method, status]}
+        initialFilters={{ method, status }}
       />
     </div>
   );

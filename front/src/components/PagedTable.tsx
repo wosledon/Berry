@@ -16,7 +16,7 @@ interface PagedTableProps<T> {
   renderFilters?: (filters: Record<string, any>, setFilters: (f: Record<string, any>) => void) => React.ReactNode;
 }
 
-export function PagedTable<T extends { id: string }>(props: PagedTableProps<T>) {
+export function PagedTable<T extends { id?: string | null }>(props: PagedTableProps<T>) {
   const { columns, fetch, pageSize = 20, initialFilters = {}, dependencies = [], toolbar, onDataLoaded, renderFilters } = props;
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PagedResult<T>>();
@@ -47,16 +47,16 @@ export function PagedTable<T extends { id: string }>(props: PagedTableProps<T>) 
         {renderFilters?.(filters, setFilters)}
       </div>
       <Table
-        rowKey="id"
+        rowKey={record => record.id ?? ''}
         loading={loading}
         dataSource={data?.items ?? []}
         columns={columns}
         pagination={{
           current: page,
-            pageSize,
-            total: data?.total ?? 0,
-            showSizeChanger: false,
-            onChange: (p) => { setPage(p); load(p); }
+          pageSize,
+          total: data?.total ?? 0,
+          showSizeChanger: false,
+          onChange: (p) => { setPage(p); load(p); }
         }}
       />
     </div>

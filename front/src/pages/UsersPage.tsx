@@ -14,13 +14,17 @@ export function UsersPage() {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['users', page, search, roleId, hasPermission, includeDeleted],
-    queryFn: () => listUsers(page, 20, search, { roleId, hasPermission, includeDeleted })
+    queryFn: () => listUsers({
+      page,
+      size: 20,
+      search,
+    })
   });
 
   const rolesQuery = useQuery({
     queryKey: ['roles', 'for-filter'],
     queryFn: async () => {
-      const r = await listRoles(1, 100);
+      const r = await listRoles({ page: 1, size: 100 });
       return r.items as Role[];
     }
   });

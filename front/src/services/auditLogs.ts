@@ -1,5 +1,9 @@
-import http from './http';
 
+
+import { apiClient } from './openapi';
+import type { paths } from '../types/api';
+
+// swagger 未生成 AuditLog 类型，需手动定义
 export interface AuditLog {
   id: string;
   method: string;
@@ -12,10 +16,9 @@ export interface AuditLog {
   isDeleted?: boolean;
 }
 
-export async function listAuditLogs(page = 1, size = 20, method?: string, status?: number) {
-  const params: any = { page, size };
-  if (method) params.method = method;
-  if (status) params.status = status;
-  const resp = await http.get('/audit-logs', { params });
-  return resp.data as { items: AuditLog[]; total: number; page: number; size: number };
+// 审计日志列表
+export async function listAuditLogs(params: paths['/api/AuditLogs/Get']['get']['parameters']['query']) {
+  const { data, error } = await apiClient.GET('/api/AuditLogs/Get', { params: { query: params } });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }

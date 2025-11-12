@@ -1,18 +1,25 @@
-import http from './http';
+import { apiClient } from './openapi';
+import type { components, paths } from '../types/api';
 
-export interface Permission { id: string; name: string; description?: string; createdAt?: string; isDeleted?: boolean }
+export type Permission = components['schemas']['Permission'];
 
-export async function listPermissions(page = 1, size = 20, search?: string) {
-  const resp = await http.get('/permissions', { params: { page, size, search } });
-  return resp.data as { items: Permission[]; total: number; page: number; size: number };
+// 权限列表
+export async function listPermissions(params: paths['/api/Permissions/Get']['get']['parameters']['query']) {
+  const { data, error } = await apiClient.GET('/api/Permissions/Get', { params: { query: params } });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }
 
-export async function upsertPermission(name: string, description?: string) {
-  const resp = await http.put(`/permissions/${encodeURIComponent(name)}`, { description });
-  return resp.data as Permission;
+// 权限 upsert
+export async function upsertPermission(name: string, permission: Permission) {
+  const { data, error } = await apiClient.PUT('/api/Permissions/Upsert/{name}', { params: { path: { name } }, body: permission });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }
 
+// 权限同步
 export async function syncPermissions() {
-  const resp = await http.post('/permissions/sync');
-  return resp.data as { added: number; updated: number };
+  const { data, error } = await apiClient.POST('/api/Permissions/Sync/sync', {});
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }

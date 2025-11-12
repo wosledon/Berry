@@ -1,13 +1,18 @@
-import http from './http';
+import { apiClient } from './openapi';
+import type { components, paths } from '../types/api';
 
-export interface Role { id: string; name: string; description?: string; createdAt?: string; isDeleted?: boolean }
+export type Role = components['schemas']['Role'];
 
-export async function listRoles(page = 1, size = 20, search?: string) {
-  const resp = await http.get('/roles', { params: { page, size, search } });
-  return resp.data as { items: Role[]; total: number; page: number; size: number };
+// 角色列表
+export async function listRoles(params: paths['/api/Roles/List']['get']['parameters']['query']) {
+  const { data, error } = await apiClient.GET('/api/Roles/List', { params: { query: params } });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }
 
+// 角色明细
 export async function getRoleDetail(id: string) {
-  const resp = await http.get<{ role: Role; permissions: string[] }>(`/roles/${id}`);
-  return resp.data;
+  const { data, error } = await apiClient.GET('/api/Roles/Detail/{id}', { params: { path: { id } } });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }

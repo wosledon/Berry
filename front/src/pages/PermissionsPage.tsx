@@ -9,13 +9,13 @@ export function PermissionsPage() {
   const [page, setPage] = useState(1);
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
-  const { data, isLoading } = useQuery({
-    queryKey: ['permissions', page, search],
-    queryFn: () => listPermissions(page, 20, search)
-  });
+  // 已废弃，PagedTable 统一处理分页和筛选
 
   const upsert = useMutation({
-    mutationFn: (payload: { name: string; description?: string }) => upsertPermission(payload.name, payload.description),
+    mutationFn: (payload: { name: string; description?: string }) => upsertPermission(payload.name, {
+      name: payload.name,
+      description: payload.description,
+    }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['permissions'] })
   });
 
@@ -39,7 +39,11 @@ export function PermissionsPage() {
       </div>
       <PagedTable<Permission>
         columns={columns}
-        fetch={({ page, size, filters }) => listPermissions(page, size, filters.search as string)}
+        fetch={({ page, size, filters }) => listPermissions({
+          page,
+          size,
+          search: filters?.search,
+        })}
         initialFilters={{ search }}
         renderFilters={(f, setF) => (
           <Input.Search allowClear placeholder="搜索权限名/描述" style={{ width: 320 }}

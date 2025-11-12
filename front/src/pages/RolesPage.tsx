@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Input, Tag, Button, Modal, Form, message, Popconfirm } from 'antd';
+import { Input, Tag, Button, Modal, Form, Popconfirm } from 'antd';
+import { useNotify } from '../hooks/useNotify';
 import { useMutation } from '@tanstack/react-query';
 import { listRoles, Role, createRole, updateRole, deleteRole, getRoleDetail } from '../services/roles';
 import { PagedTable, PagedResult } from '../components/PagedTable';
@@ -8,6 +9,7 @@ import { listPermissions, Permission } from '../services/permissions';
 import { bindRolePermissions, unbindRolePermissions } from '../services/roles';
 
 export function RolesPage() {
+  const notify = useNotify();
   const [search, setSearch] = useState('');
   const [reloadTick, setReloadTick] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -42,15 +44,15 @@ export function RolesPage() {
 
   const createMut = useMutation({
     mutationFn: (payload: Role) => createRole(payload),
-    onSuccess: () => { message.success('Created'); setReloadTick(t => t + 1); setModalOpen(false); }
+    onSuccess: () => { notify.success('Created'); setReloadTick(t => t + 1); setModalOpen(false); }
   });
   const updateMut = useMutation({
     mutationFn: (vars: { id: string; payload: Role }) => updateRole(vars.id, vars.payload),
-    onSuccess: () => { message.success('Updated'); setReloadTick(t => t + 1); setModalOpen(false); }
+    onSuccess: () => { notify.success('Updated'); setReloadTick(t => t + 1); setModalOpen(false); }
   });
   const deleteMut = useMutation({
     mutationFn: (id: string) => deleteRole(id),
-    onSuccess: () => { message.success('Deleted'); setReloadTick(t => t + 1); }
+    onSuccess: () => { notify.success('Deleted'); setReloadTick(t => t + 1); }
   });
 
   function onNew() {
@@ -92,16 +94,16 @@ export function RolesPage() {
   // 分配权限 - 绑定/解绑
   async function onBindPermissions() {
     if (!permTarget?.id) return;
-    if (selectedPermissionIds.length === 0) { message.warning('请选择要绑定的权限'); return; }
+    if (selectedPermissionIds.length === 0) { notify.warning('请选择要绑定的权限'); return; }
     await bindRolePermissions(permTarget.id!, selectedPermissionIds);
-    message.success('已绑定权限');
+    notify.success('已绑定权限');
     setPermOpen(false);
   }
   async function onUnbindPermissions() {
     if (!permTarget?.id) return;
-    if (selectedPermissionIds.length === 0) { message.warning('请选择要解绑的权限'); return; }
+    if (selectedPermissionIds.length === 0) { notify.warning('请选择要解绑的权限'); return; }
     await unbindRolePermissions(permTarget.id!, selectedPermissionIds);
-    message.success('已解绑权限');
+    notify.success('已解绑权限');
     setPermOpen(false);
   }
 

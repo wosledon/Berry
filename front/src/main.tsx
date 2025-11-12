@@ -13,29 +13,34 @@ import 'antd/dist/reset.css';
 const qc = new QueryClient();
 
 function ThemedApp() {
-  const { isDark, colors } = useTheme();
+  const { isDark, colors, layoutStyle } = useTheme();
   return (
     <ConfigProvider theme={{
       algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
       token: { borderRadius: 12, colorPrimary: colors.primary }
-    }}>
+    }} componentSize={layoutStyle === 'compact' ? 'small' : 'middle'}>
       <App />
     </ConfigProvider>
   );
 }
 
+const AppTree = (
+  <BrowserRouter>
+    <QueryClientProvider client={qc}>
+      <ThemeProvider>
+        <AuthProvider>
+          <PermissionsProvider>
+            <ThemedApp />
+          </PermissionsProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
+);
+
+// 说明：React 18 在开发模式下的 StrictMode 会故意二次调用副作用（mount -> unmount -> remount），导致所有 useEffect 中的请求执行两次。
+// 如需避免开发环境重复请求，可设置环境变量 VITE_STRICT=false 运行，或在此直接移除 StrictMode。
+// 生产构建（npm run build 后部署）不会触发二次请求。
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <QueryClientProvider client={qc}>
-        <ThemeProvider>
-          <AuthProvider>
-            <PermissionsProvider>
-              <ThemedApp />
-            </PermissionsProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
-  </React.StrictMode>
+  import.meta.env.VITE_STRICT === 'false' ? AppTree : <React.StrictMode>{AppTree}</React.StrictMode>
 );

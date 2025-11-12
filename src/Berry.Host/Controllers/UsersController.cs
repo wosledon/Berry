@@ -69,7 +69,7 @@ public sealed class UsersController(BerryDbContext db, IPermissionsCacheInvalida
     }
 
     [HttpPost]
-    [Permission("users.manage")]
+    [Permission("users.manage", Description = "创建用户")]
     public async Task<ActionResult<User>> Create([FromBody] User input, CancellationToken ct)
     {
         // 幂等：用户名唯一

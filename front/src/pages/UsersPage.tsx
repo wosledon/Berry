@@ -1,12 +1,14 @@
 import { useMutation } from '@tanstack/react-query';
 import { listUsers, User, createUser, updateUser, deleteUser, bindUserRoles, unbindUserRoles, getUserDetail } from '../services/users';
 import { useMemo, useState } from 'react';
-import { Input, Modal, Form, message, Tag, Button, Popconfirm } from 'antd';
+import { Input, Modal, Form, Tag, Button, Popconfirm } from 'antd';
+import { useNotify } from '../hooks/useNotify';
 import type { ColumnsType } from 'antd/es/table';
 import { listRoles, Role } from '../services/roles';
 import { PagedTable, PagedResult } from '../components/PagedTable';
 
 export function UsersPage() {
+  const notify = useNotify();
   const [search, setSearch] = useState('');
   const [reloadTick, setReloadTick] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -42,15 +44,15 @@ export function UsersPage() {
 
   const createMut = useMutation({
     mutationFn: (payload: User) => createUser(payload),
-    onSuccess: () => { message.success('Created'); setReloadTick(t => t + 1); setModalOpen(false); }
+    onSuccess: () => { notify.success('Created'); setReloadTick(t => t + 1); setModalOpen(false); }
   });
   const updateMut = useMutation({
     mutationFn: (vars: { id: string; payload: User }) => updateUser(vars.id, vars.payload),
-    onSuccess: () => { message.success('Updated'); setReloadTick(t => t + 1); setModalOpen(false); }
+    onSuccess: () => { notify.success('Updated'); setReloadTick(t => t + 1); setModalOpen(false); }
   });
   const deleteMut = useMutation({
     mutationFn: (id: string) => deleteUser(id),
-    onSuccess: () => { message.success('Deleted'); setReloadTick(t => t + 1); }
+    onSuccess: () => { notify.success('Deleted'); setReloadTick(t => t + 1); }
   });
 
   function onNew() {
@@ -92,16 +94,16 @@ export function UsersPage() {
   // 分配角色 - 绑定/解绑
   async function onBindRoles() {
     if (!assignTarget?.id) return;
-    if (selectedRoleIds.length === 0) { message.warning('请选择要绑定的角色'); return; }
+    if (selectedRoleIds.length === 0) { notify.warning('请选择要绑定的角色'); return; }
     await bindUserRoles(assignTarget.id!, selectedRoleIds);
-    message.success('已绑定角色');
+    notify.success('已绑定角色');
     setAssignOpen(false);
   }
   async function onUnbindRoles() {
     if (!assignTarget?.id) return;
-    if (selectedRoleIds.length === 0) { message.warning('请选择要解绑的角色'); return; }
+    if (selectedRoleIds.length === 0) { notify.warning('请选择要解绑的角色'); return; }
     await unbindUserRoles(assignTarget.id!, selectedRoleIds);
-    message.success('已解绑角色');
+    notify.success('已解绑角色');
     setAssignOpen(false);
   }
 

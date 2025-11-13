@@ -7,9 +7,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Berry.Host.Controllers;
 
+/// <summary>
+/// 菜单管理接口。
+/// 路由模板采用 api/[controller]/[action]，因此例如导入接口为 POST /api/Menus/Import。
+/// 权限点：
+/// - menus.view：查询/分页
+/// - menus.manage：增删改/导入
+/// </summary>
 public sealed class MenusController(BerryDbContext db) : ApiControllerBase
 {
-    // 分页查询菜单
+    /// <summary>
+    /// 分页查询菜单（按 order 升序，其次按 name 升序）。
+    /// 支持 name/path/permission 模糊搜索。
+    /// </summary>
     [HttpGet]
     [Permission("menus.view")]
     public async Task<ActionResult<object>> List([FromQuery] int page = 1, [FromQuery] int size = 20, [FromQuery] string? search = null, CancellationToken ct = default)
@@ -25,7 +35,9 @@ public sealed class MenusController(BerryDbContext db) : ApiControllerBase
         return Ok(new { items, total, page, size });
     }
 
-    // 创建菜单
+    /// <summary>
+    /// 创建菜单。由服务端生成主键 Id。
+    /// </summary>
     [HttpPost]
     [Permission("menus.manage")]
     public async Task<ActionResult<Menu>> Create([FromBody] Menu input, CancellationToken ct)
@@ -36,7 +48,9 @@ public sealed class MenusController(BerryDbContext db) : ApiControllerBase
         return Created($"/api/menus/{input.Id}", input);
     }
 
-    // 更新菜单
+    /// <summary>
+    /// 更新菜单。
+    /// </summary>
     [HttpPut("{id}")]
     [Permission("menus.manage")]
     public async Task<ActionResult<Menu>> Update(string id, [FromBody] Menu input, CancellationToken ct)
@@ -53,7 +67,9 @@ public sealed class MenusController(BerryDbContext db) : ApiControllerBase
         return Ok(entity);
     }
 
-    // 删除菜单（软删除）
+    /// <summary>
+    /// 删除菜单（软删除）。
+    /// </summary>
     [HttpDelete("{id}")]
     [Permission("menus.manage")]
     public async Task<ActionResult<object>> Delete(string id, CancellationToken ct)
@@ -65,7 +81,11 @@ public sealed class MenusController(BerryDbContext db) : ApiControllerBase
         return Ok(new { affected = 1 });
     }
 
-    // 从静态路由上报/同步菜单（幂等：按 Path 匹配）
+    /// <summary>
+    /// 从静态路由上报/同步菜单（幂等：按 Path 匹配）。
+    /// 第一轮按 Path Upsert 基本信息（Name/Icon/Order/Permission）；
+    /// 第二轮设置 ParentId：优先使用客户端传入的 ParentPath；若未提供，基于自身 Path 推断父级路径（如 /a/b/c -> /a/b）。
+    /// </summary>
     public sealed record ReportMenuItem(string Name, string Path, string? Icon, int? Order, string? Permission, string? ParentPath);
 
     [HttpPost]

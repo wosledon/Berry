@@ -1,14 +1,16 @@
-# Berry 前端模板
+# Berry 前端（React + Vite）
 
-基于 React + TypeScript + Vite + Tailwind 的管理端脚手架，对接 Berry 后端内置接口（Users / Roles / Permissions / AuditLogs）。
+使用 React + TypeScript + Vite + Ant Design 构建的管理端模板，已对接 Berry 后端的认证、多租户、RBAC、菜单管理等接口，并通过 openapi-fetch 基于 Swagger 自动生成类型化客户端。
 
-## 功能点
-- 页面：Dashboard、Users、Roles、Permissions、Audit Logs
-- 权限守卫：`<PermissionGuard all|any>` 基于用户详情接口的 effectivePermissions
-- Mock 登录：仅设置 `userId` 进入（后续接 JWT）
-- 请求封装：Axios 拦截器附加 Token / 租户 Header
-- 分页示例：列表页 20 条一页
-- 权限管理：同步、Upsert 描述
+## 功能与要点
+- 页面：Dashboard、Users、Roles、Permissions、Menus、Tenants、Audit Logs
+- 权限守卫：`usePermissions.hasAny()` 与路由/菜单过滤联动
+- 认证：`/api/Auth/login` 与 `/api/Auth/register`，携带 `Authorization: Bearer` 与 `X-Tenant`
+- 混合菜单（Hybrid）：
+  - 管理员使用静态 `routes.ts`（并可一键“上报菜单”到后端）
+  - 普通用户启动时从后端拉取菜单并动态构建导航
+- 国际化：`react-i18next`，文案在 `src/locales`
+- OpenAPI：`openapi-typescript` + `openapi-fetch`，强类型 API 调用
 
 ## 开发运行
 ```bash
@@ -17,36 +19,30 @@ npm run dev
 ```
 访问: http://localhost:5173
 
-确保后端运行在 http://localhost:5099。
+确保后端运行在 http://localhost:5099（Vite 通过代理将 /api 转发到后端）。
 
-## 后续可扩展
-- 接入真实认证：登录获取 JWT → 存储 token → 请求头自动附加
-- 菜单权限动态生成：根据 `permissions` 过滤菜单数组
-- 表格抽象：统一分页、搜索、列定义
-- 国际化：接入 i18n（例如 react-i18next）
-- OpenAPI 自动类型生成：使用 `openapi-typescript` + 代码生成 API Client
+## OpenAPI 类型生成
+- 生成命令：`npm run gen:api`
+- 依赖地址：`http://localhost:5099/swagger/v1/swagger.json`
+- 注意：新增后端端点（如 `POST /api/Menus/Import`）后需先重启后端以更新 Swagger，再执行本命令。
 
 ## 目录结构
 ```
 front/
   package.json
-  vite.config.ts
+  vite.config.mts
   src/
-    pages/* 页面组件
-    components/* 布局/守卫
-    context/* Auth / Permissions 上下文
-    services/* API 调用封装
-    styles/* 全局样式
+    config/routes.ts        # 静态路由（管理员使用）
+    components/Layout.tsx   # 应用壳与混合菜单渲染
+    pages/*                 # 页面组件
+    services/*              # 使用 openapi-fetch 的 API 客户端
+    context/*               # Auth / Permissions / Theme
+    locales/*               # i18n 资源
 ```
 
-## 认证占位
-当前后端尚未启用 JWT，权限过滤依赖后端返回的用户详情。若后端添加认证后：
-1. 增加 /login 接口返回 token
-2. AuthContext 存储 token 并附加 Authorization 头
-3. 401 拦截器统一跳转 /login
-
-## 租户支持
-通过在 localStorage 存放 `tenantId`（未来登录返回），拦截器设置 `X-Tenant` 头。
+## 常见问题
+- 生成类型缺少某个端点：确认 Swagger 已显示该端点，若无请重启后端；然后执行 `npm run gen:api`。
+- 请求 401：检查是否已通过登录获取 Token，或 `X-Tenant` 是否正确。
 
 ---
-> 初始版本：0.1.0
+版本：0.2.0

@@ -73,4 +73,34 @@ public sealed class AuthController(BerryDbContext db, IConfiguration configurati
 
         return Ok(new LoginResponse(tokenStr, user.Id, tenantId, expires));
     }
+
+    public sealed record RegisterRequest(string Username, string Password, string TenantId, string? DisplayName, string? Email);
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<ActionResult<object>> Register([FromBody] RegisterRequest input, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(input.Username) || string.IsNullOrWhiteSpace(input.Password) || string.IsNullOrWhiteSpace(input.TenantId))
+            return BadRequest(new { message = "Username, password and tenantId are required" });
+
+        // 校验租户是否被禁用（如存在租户表）
+        var tenant = await db.SystemTenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == input.TenantId && !t.IsDeleted, ct);
+        if (tenant != null && tenant.IsDisabled)
+            return BadRequest(new { message = "Tenant disabled" });
+
+        var exists = await db.Users.IgnoreQueryFilters().AnyAsync(u => u.TenantId == input.TenantId && u.Username == input.Username, ct);
+        if (exists) return Conflict(new { message = "Username already exists" });
+
+        var user = new User
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            Username = input.Username,
+            DisplayName = input.DisplayName,
+            Email = input.Email,
+            PasswordHash = PasswordHasher.Hash(input.Password),
+            TenantId = input.TenantId
+        };
+        await db.Users.AddAsync(user, ct);
+        await db.SaveChangesAsync(ct);
+        return Created($"/api/users/{user.Id}", new { user.Id, user.Username, user.DisplayName, user.Email, user.TenantId });
+    }
 }

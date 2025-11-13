@@ -15,7 +15,12 @@ internal sealed class PermissionSyncService(BerryDbContext db) : IPermissionSync
     public async Task<(int added, int updated)> SyncAsync(CancellationToken ct = default)
     {
         var asms = AppDomain.CurrentDomain.GetAssemblies();
-        var scanned = PermissionScanner.Scan(asms).Distinct().ToList();
+        // 仅按 Name 去重，合并描述（优先使用第一个非空描述）
+        var scanned = PermissionScanner
+            .Scan(asms)
+            .GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(g => (Name: g.Key, Description: g.Select(x => x.Description).FirstOrDefault(d => !string.IsNullOrWhiteSpace(d))))
+            .ToList();
 
         var existing = await db.Permissions.AsNoTracking().ToListAsync(ct);
         var map = existing.ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);

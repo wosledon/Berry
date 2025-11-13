@@ -1,7 +1,7 @@
-import http from './http';
+import { apiClient } from './openapi';
+import type { components, paths } from '../types/api';
 
 export interface Tenant {
-  id?: string;
   tenantId?: string;
   name?: string;
   description?: string;
@@ -12,29 +12,37 @@ export interface Tenant {
 
 export interface PagedResult<T> { items: T[]; total: number; page: number; size: number }
 
-export async function listTenants(params: { page?: number; size?: number; search?: string }): Promise<PagedResult<Tenant>> {
-  const { data } = await http.get('/Tenants/List', { params });
-  return data;
+export async function listTenants(params: paths['/api/Tenants/List']['get']['parameters']['query']): Promise<PagedResult<Tenant>> {
+  const { data, error } = await apiClient.GET('/api/Tenants/List', { params: { query: params } });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any);
 }
 
-export async function createTenant(payload: Tenant): Promise<Tenant> {
-  const { data } = await http.post('/Tenants/Create', payload);
-  return data;
+export async function createTenant(payload: components['schemas']['CreateTenantRequest']): Promise<Tenant> {
+  const { data, error } = await apiClient.POST('/api/Tenants/Create', { body: payload });
+  if (error) throw error;
+  const content = (data as any)?.['application/json'] ?? (data as any);
+  return content as components['schemas']['TenantDto'];
 }
 
-export async function updateTenant(id: string, payload: Tenant): Promise<Tenant> {
-  const { data } = await http.put(`/Tenants/Update/${id}`, payload);
-  return data;
+export async function updateTenant(id: string, payload: components['schemas']['UpdateTenantRequest']): Promise<Tenant> {
+  const { data, error } = await apiClient.PUT('/api/Tenants/Update/{id}', { params: { path: { id } }, body: payload });
+  if (error) throw error;
+  const content = (data as any)?.['application/json'] ?? (data as any);
+  return content as components['schemas']['TenantDto'];
 }
 
 export async function deleteTenant(id: string): Promise<void> {
-  await http.delete(`/Tenants/Delete/${id}`);
+  const { error } = await apiClient.DELETE('/api/Tenants/Delete/{id}', { params: { path: { id } } });
+  if (error) throw error;
 }
 
 export async function listAllTenants(): Promise<Tenant[]> {
   try {
-    const { data } = await http.get('/Tenants/List', { params: { page: 1, size: 1000 } });
-    return data?.items ?? [];
+    const { data, error } = await apiClient.GET('/api/Tenants/List', { params: { query: { page: 1, size: 1000 } } });
+    if (error) throw error;
+    const content = (data as any)?.['application/json'] ?? (data as any);
+    return content?.items ?? [];
   } catch {
     return [{ tenantId: 'public', name: 'Public' } as Tenant];
   }

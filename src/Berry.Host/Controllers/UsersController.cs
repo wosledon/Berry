@@ -88,6 +88,9 @@ public sealed class UsersController(BerryDbContext db, IPermissionsCacheInvalida
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
         if (user == null) return NotFound();
         user.Username = input.Username; user.DisplayName = input.DisplayName; user.Email = input.Email;
+        // 允许管理员修改用户所属租户
+        if (!string.IsNullOrWhiteSpace(input.TenantId) && !string.Equals(user.TenantId, input.TenantId, StringComparison.Ordinal))
+            user.TenantId = input.TenantId;
         await db.SaveChangesAsync(ct);
         return Ok(user);
     }
@@ -179,5 +182,33 @@ public sealed class UsersController(BerryDbContext db, IPermissionsCacheInvalida
     if (toRemove.Count > 0) await db.SaveChangesAsync(ct);
     await cacheInvalidator.InvalidateUserAsync(id, ct);
         return Ok(new { affected = toRemove.Count });
+    }
+
+    // 重置密码（置空哈希）
+    [HttpPost("{id}")]
+    [Permission("users.manage")]
+    public async Task<ActionResult<object>> ResetPassword(string id, CancellationToken ct)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
+        if (user == null) return NotFound();
+        user.PasswordHash = null;
+        await db.SaveChangesAsync(ct);
+        await cacheInvalidator.InvalidateUserAsync(id, ct);
+        return Ok(new { affected = 1 });
+    }
+
+    public sealed record SetPasswordRequest(string Password);
+    [HttpPost("{id}")]
+    [Permission("users.manage")]
+    public async Task<ActionResult<object>> SetPassword(string id, [FromBody] SetPasswordRequest input, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(input.Password) || input.Password.Length < 6)
+            return BadRequest(new { message = "Password too short" });
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
+        if (user == null) return NotFound();
+        user.PasswordHash = PasswordHasher.Hash(input.Password);
+        await db.SaveChangesAsync(ct);
+        await cacheInvalidator.InvalidateUserAsync(id, ct);
+        return Ok(new { affected = 1 });
     }
 }

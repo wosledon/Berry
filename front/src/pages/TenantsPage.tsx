@@ -27,7 +27,7 @@ export function TenantsPage() {
     { title: t('Actions'), width: 160, render: (_, r) => (
       <div className="flex items-center gap-2">
         <Button size="small" onClick={() => onEdit(r)}>{t('Edit')}</Button>
-        <Popconfirm title={t('Delete this tenant?')} onConfirm={() => onDelete(r.id!)}>
+        <Popconfirm title={t('Delete this tenant?')} onConfirm={() => onDelete(r.tenantId!)}>
           <Button size="small" danger>{t('Delete')}</Button>
         </Popconfirm>
       </div>
@@ -61,7 +61,7 @@ export function TenantsPage() {
   function onSubmit() {
     form.validateFields().then(values => {
       const payload: Tenant = { ...editing, ...values } as Tenant;
-      if (editing?.id) updateMut.mutate({ id: editing.id, payload }); else createMut.mutate(payload);
+      if (editing?.tenantId) updateMut.mutate({ id: editing.tenantId, payload }); else createMut.mutate(payload);
     });
   }
 
@@ -72,6 +72,7 @@ export function TenantsPage() {
         fetch={({ page, size, filters }) => listTenants({ page, size, search: filters.search }) as Promise<PagedResult<Tenant>>}
         initialFilters={{ search }}
         dependencies={[reloadTick]}
+        rowKeyFn={(r)=> r.tenantId!}
         rowSelectionEnabled
         onSelectionChange={(keys) => setSelectedIds(keys)}
         toolbar={(
@@ -89,8 +90,8 @@ export function TenantsPage() {
 
       <Modal title={editing ? t('Edit Tenant') : t('New Tenant')} open={modalOpen} onCancel={()=>setModalOpen(false)} onOk={onSubmit} confirmLoading={createMut.isPending || updateMut.isPending} destroyOnClose>
         <Form form={form} layout="vertical">
-          <Form.Item label={t('Tenant Id')} name="tenantId" rules={[{ required: true, message: t('Required') }]}>
-            <Input placeholder={t('tenant id')} disabled={!!editing?.id} />
+          <Form.Item label={t('Tenant Id')} name="tenantId" rules={[{ required: true, message: t('Required') }]}> 
+            <Input placeholder={t('tenant id')} disabled={!!editing?.tenantId} />
           </Form.Item>
           <Form.Item label={t('Name')} name="name" rules={[{ required: true, message: t('Required') }]}>
             <Input placeholder={t('tenant name')} />

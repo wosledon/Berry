@@ -27,6 +27,8 @@ public sealed class BerryDbContext : DbContext
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<Menu> Menus => Set<Menu>();
+    public DbSet<SystemTenant> SystemTenants => Set<SystemTenant>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -106,6 +108,27 @@ public sealed class BerryDbContext : DbContext
             b.HasIndex(x => new { x.UserId, x.PermissionName }).IsUnique();
             b.Property(x => x.UserId).HasMaxLength(64).IsRequired();
             b.Property(x => x.PermissionName).HasMaxLength(128).IsRequired();
+        });
+
+        modelBuilder.Entity<Menu>(b =>
+        {
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Name).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Path).HasMaxLength(256);
+            b.Property(x => x.Icon).HasMaxLength(64);
+            b.Property(x => x.Permission).HasMaxLength(128);
+            b.Property(x => x.ParentId).HasMaxLength(64);
+            b.HasIndex(x => new { x.TenantId, x.Path });
+            b.HasIndex(x => new { x.TenantId, x.Name });
+        });
+
+        modelBuilder.Entity<SystemTenant>(b =>
+        {
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Id).HasMaxLength(128);
+            b.Property(x => x.Name).HasMaxLength(128);
+            b.Property(x => x.Description).HasMaxLength(256);
+            b.HasIndex(x => x.Name);
         });
     }
 

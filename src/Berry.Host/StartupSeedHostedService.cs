@@ -30,6 +30,14 @@ internal sealed class StartupSeedHostedService : IHostedService
         var adminUser = _cfg["Seed:AdminUser"] ?? "admin";
         var adminPassword = _cfg["Seed:AdminPassword"] ?? "ChangeMe123!";
 
+        // 确保默认租户存在
+        var anyTenant = await db.SystemTenants.AnyAsync(cancellationToken);
+        if (!anyTenant)
+        {
+            await db.SystemTenants.AddAsync(new SystemTenant { Id = tenantId, Name = tenantId, CreatedAt = DateTime.UtcNow }, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
         // 是否已有任一用户
         var anyUser = await db.Users.IgnoreQueryFilters().AnyAsync(cancellationToken);
         if (!anyUser)

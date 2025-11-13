@@ -21,7 +21,7 @@ interface PagedTableProps<T> {
   rowKeyFn?: (record: T) => string | number; // 自定义 rowKey
 }
 
-export function PagedTable<T extends { id?: string | null }>(props: PagedTableProps<T>) {
+export function PagedTable<T extends object>(props: PagedTableProps<T>) {
   const { columns, fetch, pageSize = 20, initialFilters = {}, dependencies = [], toolbar, onDataLoaded, renderFilters, rowSelectionEnabled, onSelectionChange, selectedRowKeys: controlledKeys, defaultSelectedRowKeys, rowKeyFn } = props;
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PagedResult<T>>();
@@ -53,7 +53,7 @@ export function PagedTable<T extends { id?: string | null }>(props: PagedTablePr
         {renderFilters?.(filters, setFilters)}
       </div>
       <Table
-        rowKey={record => (rowKeyFn ? rowKeyFn(record) : (record as any).id ?? '')}
+        rowKey={record => (rowKeyFn ? rowKeyFn(record) : ((record as any).id ?? (record as any).tenantId ?? ''))}
         loading={loading}
         dataSource={data?.items ?? []}
         columns={columns}

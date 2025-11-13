@@ -54,14 +54,15 @@ export async function unbindUserRoles(id: string, roleIds: string[]) {
 
 // 重置密码（后端自定义端点，使用 fetch 兜底）
 export async function resetPassword(id: string) {
-  const resp = await fetch(`/api/Users/ResetPassword/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-  if (!resp.ok) throw new Error('reset failed');
-  return await resp.json().catch(() => ({}));
+  const { data, error } = await apiClient.POST('/api/Users/ResetPassword/{id}', { params: { path: { id } } });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any) ?? {};
 }
 
 // 设置密码
 export async function setPassword(id: string, password: string) {
-  const resp = await fetch(`/api/Users/SetPassword/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
-  if (!resp.ok) throw new Error('set failed');
-  return await resp.json().catch(() => ({}));
+  const body: components['schemas']['SetPasswordRequest'] = { password };
+  const { data, error } = await apiClient.POST('/api/Users/SetPassword/{id}', { params: { path: { id } }, body });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any) ?? {};
 }

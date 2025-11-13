@@ -237,6 +237,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["RegisterRequest"];
+                    "text/json": components["schemas"]["RegisterRequest"];
+                    "application/*+json": components["schemas"]["RegisterRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/custom/health": {
         parameters: {
             query?: never;
@@ -298,6 +337,166 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Menus/List": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    size?: number;
+                    search?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Menus/Create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["Menu"];
+                    "text/json": components["schemas"]["Menu"];
+                    "application/*+json": components["schemas"]["Menu"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["Menu"];
+                        "application/json": components["schemas"]["Menu"];
+                        "text/json": components["schemas"]["Menu"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Menus/Update/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["Menu"];
+                    "text/json": components["schemas"]["Menu"];
+                    "application/*+json": components["schemas"]["Menu"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["Menu"];
+                        "application/json": components["schemas"]["Menu"];
+                        "text/json": components["schemas"]["Menu"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Menus/Delete/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -695,6 +894,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Tenants/List": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    size?: number;
+                    search?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Tenants/Create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateTenantRequest"];
+                    "text/json": components["schemas"]["CreateTenantRequest"];
+                    "application/*+json": components["schemas"]["CreateTenantRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TenantDto"];
+                        "application/json": components["schemas"]["TenantDto"];
+                        "text/json": components["schemas"]["TenantDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Tenants/Update/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTenantRequest"];
+                    "text/json": components["schemas"]["UpdateTenantRequest"];
+                    "application/*+json": components["schemas"]["UpdateTenantRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TenantDto"];
+                        "application/json": components["schemas"]["TenantDto"];
+                        "text/json": components["schemas"]["TenantDto"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Tenants/Delete/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Test/Hello/api/test/hello": {
         parameters: {
             query?: never;
@@ -745,6 +1104,9 @@ export interface paths {
                     page?: number;
                     size?: number;
                     search?: string;
+                    roleId?: string;
+                    hasPermission?: string;
+                    includeDeleted?: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -1091,10 +1453,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Users/ResetPassword/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Users/SetPassword/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["SetPasswordRequest"];
+                    "text/json": components["schemas"]["SetPasswordRequest"];
+                    "application/*+json": components["schemas"]["SetPasswordRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CreateTenantRequest: {
+            tenantId?: string | null;
+            name?: string | null;
+            description?: string | null;
+            isDisabled?: boolean;
+        };
         LoginRequest: {
             username?: string | null;
             password?: string | null;
@@ -1106,6 +1550,24 @@ export interface components {
             tenantId?: string | null;
             /** Format: date-time */
             expiresAt?: string;
+        };
+        Menu: {
+            id?: string | null;
+            tenantId?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            createdBy?: string | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
+            updatedBy?: string | null;
+            isDeleted?: boolean;
+            name?: string | null;
+            path?: string | null;
+            icon?: string | null;
+            /** Format: int32 */
+            order?: number;
+            permission?: string | null;
+            parentId?: string | null;
         };
         Permission: {
             id?: string | null;
@@ -1120,6 +1582,13 @@ export interface components {
             name?: string | null;
             description?: string | null;
         };
+        RegisterRequest: {
+            username?: string | null;
+            password?: string | null;
+            tenantId?: string | null;
+            displayName?: string | null;
+            email?: string | null;
+        };
         Role: {
             id?: string | null;
             tenantId?: string | null;
@@ -1132,6 +1601,24 @@ export interface components {
             isDeleted?: boolean;
             name?: string | null;
             description?: string | null;
+        };
+        SetPasswordRequest: {
+            password?: string | null;
+        };
+        TenantDto: {
+            tenantId?: string | null;
+            name?: string | null;
+            description?: string | null;
+            isDisabled?: boolean;
+            isDeleted?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        UpdateTenantRequest: {
+            name?: string | null;
+            description?: string | null;
+            isDisabled?: boolean | null;
+            isDeleted?: boolean | null;
         };
         User: {
             id?: string | null;

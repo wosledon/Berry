@@ -14,12 +14,8 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
 }
 
 // 注册（后端未在 openapi 中声明，采用 fetch 进行调用）
-export async function register(payload: { username: string; password: string; tenantId: string; displayName?: string; email?: string; }) {
-  const resp = await fetch('/api/Auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  if (!resp.ok) throw new Error('register failed');
-  return await resp.json().catch(()=>({}));
+export async function register(payload: components['schemas']['RegisterRequest']) {
+  const { data, error } = await apiClient.POST('/api/Auth/register', { body: payload });
+  if (error) throw error;
+  return (data as any)?.['application/json'] ?? (data as any) ?? {};
 }

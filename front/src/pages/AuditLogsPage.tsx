@@ -5,6 +5,7 @@ import { listAuditLogs, AuditLog, retentionDelete, bulkDeleteAuditLogs, purgeAud
 import { PagedTable } from '../components/PagedTable';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
 export function AuditLogsPage() {
   const notify = useNotify();
@@ -15,18 +16,19 @@ export function AuditLogsPage() {
   const [to, setTo] = useState<string | undefined>();
   const [reloadTick, setReloadTick] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const { t } = useTranslation();
   const columns: ColumnsType<AuditLog> = useMemo(() => ([
-    { title: 'Time', dataIndex: 'createdAt', render: (v: string) => new Date(v).toLocaleString() },
-    { title: 'Method', dataIndex: 'method' },
-    { title: 'Path', dataIndex: 'path', ellipsis: true },
-    { title: 'Status', dataIndex: 'statusCode' },
-    { title: 'Elapsed', dataIndex: 'elapsedMs', render: (v: number) => `${v} ms` },
-    { title: 'Deleted', dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
-  ]), []);
+    { title: t('Time'), dataIndex: 'createdAt', render: (v: string) => new Date(v).toLocaleString() },
+    { title: t('Method'), dataIndex: 'method' },
+    { title: t('Path'), dataIndex: 'path', ellipsis: true },
+    { title: t('Status'), dataIndex: 'statusCode' },
+    { title: t('Elapsed'), dataIndex: 'elapsedMs', render: (v: number) => `${v} ms` },
+    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+  ]), [t]);
   return (
     <div>
       <div className="flex items-center justify-between mb-3 gap-3">
-        <h1 className="text-xl font-semibold">Audit Logs</h1>
+        <h1 className="text-xl font-semibold">{t('Audit Logs')}</h1>
         <div className="flex items-center gap-2 flex-wrap">
           <DatePicker.RangePicker
             allowEmpty={[true,true]}
@@ -36,20 +38,20 @@ export function AuditLogsPage() {
             }}
             showTime
           />
-          <Select allowClear placeholder="Method" style={{ width: 120 }} value={method} onChange={setMethod}
+          <Select allowClear placeholder={t('Method')} style={{ width: 120 }} value={method} onChange={setMethod}
                   options={['GET','POST','PUT','PATCH','DELETE'].map(m => ({ value: m, label: m }))} />
-          <Input allowClear placeholder="Status" style={{ width: 100 }} value={status?.toString()}
+          <Input allowClear placeholder={t('Status')} style={{ width: 100 }} value={status?.toString()}
                  onChange={e => setStatus(e.target.value ? parseInt(e.target.value) : undefined)} />
-          <Popconfirm title="Delete logs before keepDays?" description="根据保留天数清理更早的日志" onConfirm={async () => { await retentionDelete(30); notify.success('Retention applied'); setReloadTick(t=>t+1); }}>
-            <Button>Retention 30d</Button>
+          <Popconfirm title={t('Delete logs before keepDays?')} description={t('Please select start time as before')} onConfirm={async () => { await retentionDelete(30); notify.success(t('Retention applied')); setReloadTick(t=>t+1); }}>
+            <Button>{t('Retention 30d')}</Button>
           </Popconfirm>
-          <Popconfirm title="Purge logs before date?" onConfirm={async () => { if (!from) { notify.warning('请选择起始时间作为 before'); return; } await purgeAuditLogs(from); notify.success('Purged'); setReloadTick(t=>t+1); }}>
-            <Button danger>Purge Before From</Button>
+          <Popconfirm title={t('Purge logs before date?')} onConfirm={async () => { if (!from) { notify.warning(t('Please select start time as before')); return; } await purgeAuditLogs(from); notify.success(t('Purged')); setReloadTick(t=>t+1); }}>
+            <Button danger>{t('Purge Before From')}</Button>
           </Popconfirm>
           {selectedIds.length > 0 && (
             <div className="flex items-center gap-2">
-              <Popconfirm title={`Bulk delete ${selectedIds.length} logs?`} onConfirm={async () => { await bulkDeleteAuditLogs(selectedIds); notify.success('Bulk deleted'); setReloadTick(t=>t+1); setSelectedIds([]); }}>
-                <Button danger>Bulk Delete Selected</Button>
+              <Popconfirm title={t('Bulk delete {count} logs?', { count: selectedIds.length })} onConfirm={async () => { await bulkDeleteAuditLogs(selectedIds); notify.success(t('Bulk deleted')); setReloadTick(t=>t+1); setSelectedIds([]); }}>
+                <Button danger>{t('Bulk Delete Selected')}</Button>
               </Popconfirm>
               <Popconfirm title={`Purge ${selectedIds.length} logs?`} onConfirm={async () => { await purgeByIdsAuditLogs(selectedIds); notify.success('Purged by ids'); setReloadTick(t=>t+1); setSelectedIds([]); }}>
                 <Button danger type="primary">Purge Selected</Button>

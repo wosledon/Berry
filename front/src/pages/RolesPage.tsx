@@ -7,6 +7,7 @@ import { PagedTable, PagedResult } from '../components/PagedTable';
 import type { ColumnsType } from 'antd/es/table';
 import { listPermissions, Permission } from '../services/permissions';
 import { bindRolePermissions, unbindRolePermissions } from '../services/roles';
+import { useTranslation } from 'react-i18next';
 
 export function RolesPage() {
   const notify = useNotify();
@@ -21,38 +22,39 @@ export function RolesPage() {
   const [permTarget, setPermTarget] = useState<Role | null>(null);
   const [permSearch, setPermSearch] = useState('');
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
+  const { t } = useTranslation();
 
   const columns: ColumnsType<Role> = useMemo(() => ([
-    { title: 'Name', dataIndex: 'name' },
-    { title: 'Description', dataIndex: 'description' },
-    { title: 'Created At', dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
-    { title: 'Deleted', dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+    { title: t('Name'), dataIndex: 'name' },
+    { title: t('Description'), dataIndex: 'description' },
+    { title: t('Created At'), dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
+    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
     {
-      title: 'Actions',
+      title: t('Actions'),
       width: 160,
       render: (_, record) => (
         <div className="flex items-center gap-2">
-          <Button size="small" onClick={() => onManagePermissions(record)}>Manage Permissions</Button>
-          <Button size="small" onClick={() => onEdit(record)}>Edit</Button>
-          <Popconfirm title="Delete this role?" onConfirm={() => onDelete(record.id!)}>
-            <Button size="small" danger>Delete</Button>
+          <Button size="small" onClick={() => onManagePermissions(record)}>{t('Manage Permissions')}</Button>
+          <Button size="small" onClick={() => onEdit(record)}>{t('Edit')}</Button>
+          <Popconfirm title={t('Delete this role?')} onConfirm={() => onDelete(record.id!)}>
+            <Button size="small" danger>{t('Delete')}</Button>
           </Popconfirm>
         </div>
       )
     }
-  ]), []);
+  ]), [t]);
 
   const createMut = useMutation({
     mutationFn: (payload: Role) => createRole(payload),
-    onSuccess: () => { notify.success('Created'); setReloadTick(t => t + 1); setModalOpen(false); }
+    onSuccess: () => { notify.success(t('Created')); setReloadTick(t => t + 1); setModalOpen(false); }
   });
   const updateMut = useMutation({
     mutationFn: (vars: { id: string; payload: Role }) => updateRole(vars.id, vars.payload),
-    onSuccess: () => { notify.success('Updated'); setReloadTick(t => t + 1); setModalOpen(false); }
+    onSuccess: () => { notify.success(t('Updated')); setReloadTick(t => t + 1); setModalOpen(false); }
   });
   const deleteMut = useMutation({
     mutationFn: (id: string) => deleteRole(id),
-    onSuccess: () => { notify.success('Deleted'); setReloadTick(t => t + 1); }
+    onSuccess: () => { notify.success(t('Deleted')); setReloadTick(t => t + 1); }
   });
 
   function onNew() {
@@ -119,11 +121,11 @@ export function RolesPage() {
         onSelectionChange={(keys) => setSelectedIds(keys)}
         toolbar={(
           <div className="flex items-center gap-2">
-            <Button type="primary" onClick={onNew}>New Role</Button>
-            <Input.Search allowClear placeholder="搜索角色名/描述" style={{ width: 320 }} onSearch={v => setSearch(v)} />
+            <Button type="primary" onClick={onNew}>{t('New Role')}</Button>
+            <Input.Search allowClear placeholder={t('Search role name/description')} style={{ width: 320 }} onSearch={v => setSearch(v)} />
             {selectedIds.length > 0 && (
               <Popconfirm title={`Delete ${selectedIds.length} roles?`} onConfirm={onDeleteSelected}>
-                <Button danger>Delete Selected</Button>
+                <Button danger>{t('Delete Selected')}</Button>
               </Popconfirm>
             )}
           </div>
@@ -131,7 +133,7 @@ export function RolesPage() {
       />
 
       <Modal
-        title={editing ? 'Edit Role' : 'New Role'}
+        title={editing ? t('Edit Role') : t('New Role')}
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         onOk={onSubmit}
@@ -139,38 +141,38 @@ export function RolesPage() {
         destroyOnClose
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="Name" name="name" rules={[{ required: true, message: 'Required' }]}>
+          <Form.Item label={t('Name')} name="name" rules={[{ required: true, message: t('Required') }]}>
             <Input placeholder="role name" />
           </Form.Item>
-          <Form.Item label="Description" name="description">
+          <Form.Item label={t('Description')} name="description">
             <Input placeholder="description" />
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title={`Manage Permissions${permTarget?.name ? ` - ${permTarget.name}` : ''}`}
+        title={`${t('Manage Permissions')}${permTarget?.name ? ` - ${permTarget.name}` : ''}`}
         open={permOpen}
         onCancel={() => setPermOpen(false)}
         footer={(
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Button onClick={onUnbindPermissions} danger disabled={!permTarget?.id}>Unbind Selected</Button>
-              <Button type="primary" onClick={onBindPermissions} disabled={!permTarget?.id}>Bind Selected</Button>
+              <Button onClick={onUnbindPermissions} danger disabled={!permTarget?.id}>{t('Unbind Selected')}</Button>
+              <Button type="primary" onClick={onBindPermissions} disabled={!permTarget?.id}>{t('Bind Selected')}</Button>
             </div>
-            <div className="opacity-70">已选 {selectedPermissionIds.length} 项</div>
+            <div className="opacity-70">{t('Selected {count} items', { count: selectedPermissionIds.length })}</div>
           </div>
         )}
         width={820}
         destroyOnClose
       >
         <div className="mb-2">
-          <Input.Search allowClear placeholder="搜索权限名/描述" style={{ width: 360 }} onSearch={v => setPermSearch(v)} />
+          <Input.Search allowClear placeholder={t('Search permission name/description')} style={{ width: 360 }} onSearch={v => setPermSearch(v)} />
         </div>
         <PagedTable<Permission>
           columns={useMemo<ColumnsType<Permission>>(() => ([
-            { title: 'Name', dataIndex: 'name' },
-            { title: 'Description', dataIndex: 'description' },
+            { title: t('Name'), dataIndex: 'name' },
+            { title: t('Description'), dataIndex: 'description' },
             { title: 'Created At', dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
           ]), [])}
           fetch={({ page, size, filters }) => listPermissions({ page, size, search: filters.search }) as Promise<PagedResult<Permission>>}

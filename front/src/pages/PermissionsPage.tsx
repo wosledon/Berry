@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Input, Tag, Button, Modal, Form, message, Popconfirm } from 'antd';
 import { PagedTable, PagedResult } from '../components/PagedTable';
 import type { ColumnsType } from 'antd/es/table';
+import { useTranslation } from 'react-i18next';
 
 export function PermissionsPage() {
   const [search, setSearch] = useState('');
@@ -12,41 +13,42 @@ export function PermissionsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Permission | null>(null);
   const [form] = Form.useForm<{ name: string; description?: string }>();
+  const { t } = useTranslation();
 
   const columns: ColumnsType<Permission> = useMemo(() => ([
-    { title: 'Name', dataIndex: 'name' },
-    { title: 'Description', dataIndex: 'description' },
-    { title: 'Created At', dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
-    { title: 'Deleted', dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+    { title: t('Name'), dataIndex: 'name' },
+    { title: t('Description'), dataIndex: 'description' },
+    { title: t('Created At'), dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
+    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
     {
-      title: 'Actions',
+      title: t('Actions'),
       width: 170,
       render: (_, record) => (
         <div className="flex items-center gap-2">
-          <Button size="small" onClick={() => onEdit(record)}>Edit</Button>
+          <Button size="small" onClick={() => onEdit(record)}>{t('Edit')}</Button>
           {record.isDeleted ? (
-            <Button size="small" onClick={() => onRestore(record)}>Restore</Button>
+            <Button size="small" onClick={() => onRestore(record)}>{t('Restore')}</Button>
           ) : (
-            <Popconfirm title="Delete this permission?" onConfirm={() => onSoftDelete(record)}>
-              <Button size="small" danger>Delete</Button>
+            <Popconfirm title={t('Delete this permission?')} onConfirm={() => onSoftDelete(record)}>
+              <Button size="small" danger>{t('Delete')}</Button>
             </Popconfirm>
           )}
         </div>
       )
     }
-  ]), []);
+  ]), [t]);
 
   const upsertMut = useMutation({
     mutationFn: (vars: { name: string; payload: Permission }) => upsertPermission(vars.name, vars.payload),
-    onSuccess: () => { message.success('Saved'); setReloadTick(t => t + 1); setModalOpen(false); }
+    onSuccess: () => { message.success(t('Saved')); setReloadTick(t => t + 1); setModalOpen(false); }
   });
   const syncMut = useMutation({
     mutationFn: () => syncPermissions(),
-    onSuccess: () => { message.success('Synced'); setReloadTick(t => t + 1); }
+    onSuccess: () => { message.success(t('Synced')); setReloadTick(t => t + 1); }
   });
   const delMut = useMutation({
     mutationFn: (name: string) => softDeletePermission(name),
-    onSuccess: () => { message.success('Deleted'); setReloadTick(t => t + 1); }
+    onSuccess: () => { message.success(t('Deleted')); setReloadTick(t => t + 1); }
   });
 
   function onNew() {
@@ -91,10 +93,10 @@ export function PermissionsPage() {
           <div className="flex items-center gap-2">
             <Button type="primary" onClick={onNew}>New Permission</Button>
             <Button onClick={() => syncMut.mutate()} loading={syncMut.isPending}>Sync</Button>
-            <Input.Search allowClear placeholder="搜索权限名/描述" style={{ width: 320 }} onSearch={v => setSearch(v)} />
+            <Input.Search allowClear placeholder={t('Search permission name/description')} style={{ width: 320 }} onSearch={v => setSearch(v)} />
             {selectedIds.length > 0 && (
               <Popconfirm title={`Delete ${selectedIds.length} permissions?`} onConfirm={onDeleteSelected}>
-                <Button danger>Delete Selected</Button>
+                <Button danger>{t('Delete Selected')}</Button>
               </Popconfirm>
             )}
           </div>
@@ -110,10 +112,10 @@ export function PermissionsPage() {
         destroyOnClose
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="Name" name="name" rules={[{ required: true, message: 'Required' }]}>
+          <Form.Item label={t('Name')} name="name" rules={[{ required: true, message: t('Required') }]}>
             <Input placeholder="permission name" disabled={!!editing?.name} />
           </Form.Item>
-          <Form.Item label="Description" name="description">
+          <Form.Item label={t('Description')} name="description">
             <Input placeholder="description" />
           </Form.Item>
         </Form>

@@ -6,7 +6,7 @@ import { usePermissions } from '../context/PermissionsContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Breadcrumb, Dropdown, Drawer, Radio, Space, Button, Divider, Tooltip, Switch } from 'antd';
-import { UserOutlined, LogoutOutlined, GlobalOutlined, SettingOutlined, MoonOutlined, SunOutlined, BgColorsOutlined, MenuFoldOutlined, MenuUnfoldOutlined, DashboardOutlined, TeamOutlined, CrownOutlined, KeyOutlined, FileSearchOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { UserOutlined, LogoutOutlined, GlobalOutlined, SettingOutlined, MoonOutlined, SunOutlined, BgColorsOutlined, MenuFoldOutlined, MenuUnfoldOutlined, DashboardOutlined, TeamOutlined, CrownOutlined, KeyOutlined, FileSearchOutlined, AppstoreOutlined, DownOutlined, RightOutlined } from '@ant-design/icons';
 import { routes } from '../config/routes';
 import BerryLogo from '../assets/berry.svg';
 import { useQuery } from '@tanstack/react-query';
@@ -28,6 +28,22 @@ const HEADER_HEIGHT = 64;
 const GUTTER = 16;
 
 export function Layout({ children }: { children: ReactNode }) {
+  // 分组折叠状态（持久化）
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
+    try {
+      const raw = localStorage.getItem('layout.collapsedGroups');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem('layout.collapsedGroups', JSON.stringify(next));
+      return next;
+    });
+  };
   // 菜单渲染辅助函数
   function renderSidebarMenu(routesList: typeof visibleRoutes) {
     return (
@@ -36,40 +52,104 @@ export function Layout({ children }: { children: ReactNode }) {
           if (!r.children || r.children.length === 0) {
             const active = pathname === r.path;
             return (
-              <Link key={r.path} to={r.path} className={clsx(
-                'relative flex items-center gap-2 px-3 py-2 rounded-lg transition',
-                'hover:bg-blue-100 dark:hover:bg-blue-900',
-                active ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 shadow' : 'text-gray-700 dark:text-gray-200'
-              )} style={active ? { borderLeft: '3px solid var(--primary-600)' } : undefined}>
+              <Link
+                key={r.path}
+                to={r.path}
+                className={clsx(
+                  'relative flex items-center gap-2 rounded-lg transition',
+                  'hover:bg-blue-100 dark:hover:bg-blue-900',
+                  sidebarCollapsed ? 'justify-center px-2 py-2' : 'px-3 py-2',
+                  active ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 shadow' : 'text-gray-700 dark:text-gray-200'
+                )}
+                style={!sidebarCollapsed && active ? { borderLeft: '3px solid var(--primary-600)' } : undefined}
+                title={sidebarCollapsed ? t(r.titleKey) : undefined}
+                onClick={(e) => { e.preventDefault(); if (pathname !== r.path) nav(r.path); }}
+              >
                 <span className="text-base">{iconByKey[r.iconKey || 'settings']}</span>
-                <span className="text-sm">{t(r.titleKey)}</span>
+                <span className={clsx('text-sm', sidebarCollapsed && 'hidden')}>{t(r.titleKey)}</span>
               </Link>
             );
           }
           // 有子菜单分组（如系统配置）
+          const groupKey = r.path || r.titleKey;
+          const isCollapsed = !!collapsedGroups[groupKey];
           return (
-            <div key={r.path}>
-              <div className={clsx('flex items-center cursor-pointer gap-2 px-3 py-2 text-gray-400')}
-                title={t(r.titleKey)}
-              >
-                <span className="text-base">{iconByKey[r.iconKey || 'settings']}</span>
-                <span className="font-semibold">{t(r.titleKey)}</span>
-              </div>
-              <div className="mt-1 space-y-1 ml-6">
-                {Array.isArray(r.children) && r.children.map((c: any) => {
-                  const active = pathname === c.path;
-                  return (
-                    <Link key={c.path} to={c.path} className={clsx(
-                      'relative flex items-center gap-2 px-3 py-2 rounded-lg transition',
-                      'hover:bg-blue-100 dark:hover:bg-blue-900',
-                      active ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 shadow' : 'text-gray-700 dark:text-gray-200'
-                    )} style={active ? { borderLeft: '3px solid var(--primary-600)' } : undefined}>
-                      <span className="text-base">{iconByKey[c.iconKey || 'settings']}</span>
-                      <span className="text-sm">{t(c.titleKey)}</span>
-                    </Link>
-                  );
-                })}
-              </div>
+            <div key={groupKey}>
+              {sidebarCollapsed ? (
+                <>
+                  <div
+                    className={clsx(
+                      'flex items-center cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100',
+                      'justify-center px-2 py-2'
+                    )}
+                    title={`${t(r.titleKey)} · ${isCollapsed ? t('Expand') : t('Collapse')}`}
+                    onClick={() => toggleGroup(groupKey)}
+                  >
+                    <span className="text-base">{iconByKey[r.iconKey || 'settings']}</span>
+                  </div>
+                  {!isCollapsed && (
+                    <div className="flex justify-center text-gray-400 -mt-1">
+                      <DownOutlined className="text-[10px] transition-transform duration-200" />
+                    </div>
+                  )}
+                  {!isCollapsed && (
+                    <div className="mt-1 space-y-1 px-1">
+                      {Array.isArray(r.children) && r.children.map((c: any) => {
+                        const active = pathname === c.path;
+                        return (
+                          <Link
+                            key={c.path}
+                            to={c.path}
+                            className={clsx(
+                              'flex justify-center items-center rounded-md transition',
+                              'hover:bg-blue-100 dark:hover:bg-blue-900',
+                              'px-1.5 py-1.5',
+                              active ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 shadow' : 'text-gray-700 dark:text-gray-200'
+                            )}
+                            title={t(c.titleKey)}
+                            onClick={(e) => { e.preventDefault(); if (pathname !== c.path) nav(c.path); }}
+                          >
+                            <span className="text-base">{iconByKey[c.iconKey || 'settings']}</span>
+                          </Link>
+                        );
+                      })}
+                      <div className="h-[2px] mx-1 my-2 rounded opacity-30" style={{ background: 'var(--primary-600)' }} />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div
+                  className={clsx(
+                    'flex items-center cursor-pointer gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100',
+                    'px-3 py-2'
+                  )}
+                  title={`${t(r.titleKey)} · ${isCollapsed ? t('Expand') : t('Collapse')}`}
+                  onClick={() => toggleGroup(groupKey)}
+                >
+                  <span className="text-base">{iconByKey[r.iconKey || 'settings']}</span>
+                  <span className="font-semibold flex-1">{t(r.titleKey)}</span>
+                  <DownOutlined className={clsx('text-xs transition-transform duration-200', isCollapsed ? '-rotate-90' : 'rotate-0')} />
+                </div>
+              )}
+              
+              {!sidebarCollapsed && !isCollapsed && (
+                <div className="mt-1 space-y-1 ml-6">
+                  {Array.isArray(r.children) && r.children.map((c: any) => {
+                    const active = pathname === c.path;
+                    return (
+                      <Link key={c.path} to={c.path} className={clsx(
+                        'relative flex items-center gap-2 px-3 py-2 rounded-lg transition',
+                        'hover:bg-blue-100 dark:hover:bg-blue-900',
+                        active ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 shadow' : 'text-gray-700 dark:text-gray-200'
+                      )} style={active ? { borderLeft: '3px solid var(--primary-600)' } : undefined} onClick={(e) => { e.preventDefault(); if (pathname !== c.path) nav(c.path); }}>
+                        <span className="text-base">{iconByKey[c.iconKey || 'settings']}</span>
+                        <span className="text-sm">{t(c.titleKey)}</span>
+                      </Link>
+                    );
+                  })}
+                  <div className="h-[2px] my-2 rounded opacity-30" style={{ background: 'var(--primary-600)' }} />
+                </div>
+              )}
             </div>
           );
         })}
@@ -187,29 +267,72 @@ export function Layout({ children }: { children: ReactNode }) {
   function renderSystemSidebarMenu(systemGroup: any, systemCollapsed: boolean, toggleSystemCollapsed: () => void) {
     return (
       <div>
-        <div className={clsx('flex items-center cursor-pointer', sidebarCollapsed ? 'justify-center' : 'gap-2 px-3 py-2', 'text-gray-400')}
-          onClick={toggleSystemCollapsed}
-          title={t(systemGroup.titleKey)}
-        >
-          <span className="text-base">{iconByKey[systemGroup.iconKey || 'system']}</span>
-          {!sidebarCollapsed && <span className="font-semibold">{t(systemGroup.titleKey)}</span>}
-          {!sidebarCollapsed && <span className="ml-auto text-xs">{systemCollapsed ? '+' : '-'}</span>}
-        </div>
-        <div className={clsx('mt-1 space-y-1', sidebarCollapsed ? 'hidden' : systemCollapsed ? 'hidden' : 'block')}>
-          {Array.isArray(systemGroup.children) && systemGroup.children.map((c: any) => {
-            const active = pathname === c.path;
-            return (
-              <Link key={c.path} to={c.path} className={clsx(
-                'relative flex items-center gap-2 px-3 py-2 ml-6 rounded-lg transition',
-                'hover:bg-blue-100 dark:hover:bg-blue-900',
-                active ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 shadow' : 'text-gray-700 dark:text-gray-200'
-              )} style={active ? { borderLeft: '3px solid var(--primary-600)' } : undefined}>
-                <span className="text-base">{iconByKey[c.iconKey || 'settings']}</span>
-                <span className="text-sm">{t(c.titleKey)}</span>
-              </Link>
-            );
-          })}
-        </div>
+        {sidebarCollapsed ? (
+          <>
+            <div className={clsx('flex items-center cursor-pointer justify-center px-2 py-2', 'text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100')}
+              onClick={toggleSystemCollapsed}
+              title={`${t(systemGroup.titleKey)} · ${systemCollapsed ? t('Expand') : t('Collapse')}`}
+            >
+              <span className="text-base">{iconByKey[systemGroup.iconKey || 'system']}</span>
+            </div>
+            {!systemCollapsed && (
+              <div className="flex justify-center text-gray-400 -mt-1">
+                <DownOutlined className="text-[10px] transition-transform duration-200" />
+              </div>
+            )}
+            {!systemCollapsed && (
+              <div className="mt-1 space-y-1 px-1">
+                {Array.isArray(systemGroup.children) && systemGroup.children.map((c: any) => {
+                  const active = pathname === c.path;
+                  return (
+                    <Link
+                      key={c.path}
+                      to={c.path}
+                      className={clsx(
+                        'flex justify-center items-center rounded-md transition',
+                        'hover:bg-blue-100 dark:hover:bg-blue-900',
+                        'px-1.5 py-1.5',
+                        active ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 shadow' : 'text-gray-700 dark:text-gray-200'
+                      )}
+                      title={t(c.titleKey)}
+                      onClick={(e) => { e.preventDefault(); if (pathname !== c.path) nav(c.path); }}
+                    >
+                      <span className="text-base">{iconByKey[c.iconKey || 'settings']}</span>
+                    </Link>
+                  );
+                })}
+                <div className="h-[2px] mx-1 my-2 rounded opacity-30" style={{ background: 'var(--primary-600)' }} />
+              </div>
+            )}
+          </>
+        ) : (
+          <div className={clsx('flex items-center cursor-pointer gap-2 px-3 py-2', 'text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100')}
+            onClick={toggleSystemCollapsed}
+            title={`${t(systemGroup.titleKey)} · ${systemCollapsed ? t('Expand') : t('Collapse')}`}
+          >
+            <span className="text-base">{iconByKey[systemGroup.iconKey || 'system']}</span>
+            <span className="font-semibold flex-1">{t(systemGroup.titleKey)}</span>
+            <DownOutlined className={clsx('text-xs transition-transform duration-200', systemCollapsed ? '-rotate-90' : 'rotate-0')} />
+          </div>
+        )}
+        {!sidebarCollapsed && !systemCollapsed && (
+          <div className={clsx('mt-1 space-y-1 ml-6')}>
+            {Array.isArray(systemGroup.children) && systemGroup.children.map((c: any) => {
+              const active = pathname === c.path;
+              return (
+                <Link key={c.path} to={c.path} className={clsx(
+                  'relative flex items-center gap-2 px-3 py-2 rounded-lg transition',
+                  'hover:bg-blue-100 dark:hover:bg-blue-900',
+                  active ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 shadow' : 'text-gray-700 dark:text-gray-200'
+                )} style={active ? { borderLeft: '3px solid var(--primary-600)' } : undefined} onClick={(e) => { e.preventDefault(); if (pathname !== c.path) nav(c.path); }}>
+                  <span className="text-base">{iconByKey[c.iconKey || 'settings']}</span>
+                  <span className="text-sm">{t(c.titleKey)}</span>
+                </Link>
+              );
+            })}
+            <div className="h-[2px] my-2 rounded opacity-30" style={{ background: 'var(--primary-600)' }} />
+          </div>
+        )}
       </div>
     );
   }
@@ -320,12 +443,19 @@ export function Layout({ children }: { children: ReactNode }) {
         <Divider />
         <div>
           <div className="mb-2 font-medium">{t('Notification Placement')}</div>
-          <Radio.Group value={notificationPlacement} onChange={e => setNotificationPlacement(e.target.value)}>
-            <Radio.Button value="topLeft">TopLeft</Radio.Button>
-            <Radio.Button value="topRight">TopRight</Radio.Button>
-            <Radio.Button value="bottomLeft">BottomLeft</Radio.Button>
-            <Radio.Button value="bottomRight">BottomRight</Radio.Button>
-          </Radio.Group>
+          <div className="whitespace-nowrap overflow-x-auto">
+            <Radio.Group
+              value={notificationPlacement}
+              onChange={e => setNotificationPlacement(e.target.value)}
+              style={{ display: 'inline-flex', flexWrap: 'nowrap', gap: 8 }}
+              size={layoutStyle === 'compact' ? 'small' : 'middle'}
+            >
+              <Radio.Button value="topLeft">TopLeft</Radio.Button>
+              <Radio.Button value="topRight">TopRight</Radio.Button>
+              <Radio.Button value="bottomLeft">BottomLeft</Radio.Button>
+              <Radio.Button value="bottomRight">BottomRight</Radio.Button>
+            </Radio.Group>
+          </div>
         </div>
         <Divider />
         <div className="flex items-center justify-between">

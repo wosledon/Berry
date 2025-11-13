@@ -12,13 +12,28 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Berry.Host.Controllers;
 
+/// <summary>
+/// 认证控制器 (Authentication Controller)
+/// 处理用户登录、注册等认证相关操作 (Handles login, registration, and other auth operations)
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public sealed class AuthController(BerryDbContext db, IConfiguration configuration) : ControllerBase
 {
+    /// <summary>
+    /// 登录请求记录 (Login request record)
+    /// </summary>
     public sealed record LoginRequest(string Username, string Password, string? TenantId);
+
+    /// <summary>
+    /// 登录响应记录 (Login response record)
+    /// </summary>
     public sealed record LoginResponse(string Token, string UserId, string? TenantId, DateTime ExpiresAt);
 
+    /// <summary>
+    /// 用户登录 (User login)
+    /// 返回 JWT Token 及用户信息 (Returns JWT token and user info)
+    /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest input, CancellationToken ct)
@@ -29,12 +44,12 @@ public sealed class AuthController(BerryDbContext db, IConfiguration configurati
         var tenantId = input.TenantId;
         if (string.IsNullOrWhiteSpace(tenantId))
         {
-            // 尝试从 Header 取
+            // 尝试从 Header 取 (Try from header)
             if (Request.Headers.TryGetValue("X-Tenant", out var vals)) tenantId = vals.FirstOrDefault();
         }
         if (string.IsNullOrWhiteSpace(tenantId))
         {
-            // 再次回退到配置默认租户（开发体验友好）
+            // 再次回退到配置默认租户（开发体验友好）(Fallback to default tenant for dev experience)
             tenantId = configuration["Seed:TenantId"] ?? "public";
         }
 
@@ -74,7 +89,15 @@ public sealed class AuthController(BerryDbContext db, IConfiguration configurati
         return Ok(new LoginResponse(tokenStr, user.Id, tenantId, expires));
     }
 
+    /// <summary>
+    /// 用户注册请求记录 (User registration request record)
+    /// </summary>
     public sealed record RegisterRequest(string Username, string Password, string TenantId, string? DisplayName, string? Email);
+
+    /// <summary>
+    /// 用户注册 (User registration)
+    /// 创建新用户并返回用户信息 (Creates a new user and returns user info)
+    /// </summary>
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<ActionResult<object>> Register([FromBody] RegisterRequest input, CancellationToken ct)
@@ -82,7 +105,7 @@ public sealed class AuthController(BerryDbContext db, IConfiguration configurati
         if (string.IsNullOrWhiteSpace(input.Username) || string.IsNullOrWhiteSpace(input.Password) || string.IsNullOrWhiteSpace(input.TenantId))
             return BadRequest(new { message = "Username, password and tenantId are required" });
 
-        // 校验租户是否被禁用（如存在租户表）
+        // 校验租户是否被禁用（如存在租户表）(Check if tenant is disabled)
         var tenant = await db.SystemTenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == input.TenantId && !t.IsDeleted, ct);
         if (tenant != null && tenant.IsDisabled)
             return BadRequest(new { message = "Tenant disabled" });

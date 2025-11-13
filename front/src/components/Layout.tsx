@@ -1,9 +1,9 @@
 /*
-  布局与菜单策略说明（Hybrid Menu）
-  - 管理员（拥有 menus.manage）使用静态 routes.ts 渲染菜单；可点击“上报菜单”将静态路由同步到后端（用于治理/审计/统一权限绑定）。
-  - 普通用户启动时从后端拉取菜单（GET /api/Menus/List?page=1&size=1000），
-    仅保留当前用户具备权限的菜单项，依据 ParentId 组装树并按 order -> name 排序后渲染。
-  - 面包屑根据当前生效的菜单（静态或动态）构建，保证导航文案与权限一致。
+  布局与菜单策略说明 (Layout and Menu Strategy)
+  - 管理员（拥有 menus.manage）使用静态 routes.ts 渲染菜单；可点击“上报菜单”将静态路由同步到后端 (Admins use static routes.ts for menu; can "Report Menus" to sync to backend)
+  - 普通用户启动时从后端拉取菜单（GET /api/Menus/List?page=1&size=1000）， (Normal users fetch menus from backend on startup)
+    仅保留当前用户具备权限的菜单项，依据 ParentId 组装树并按 order -> name 排序 (Only keep permitted menus, build tree by ParentId, sort by order then name)
+  - 面包屑根据当前生效的菜单（静态或动态）构建，保证导航文案与权限一致 (Breadcrumb built from current menu source for consistency)
 */
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ReactNode, useMemo, useState } from 'react';

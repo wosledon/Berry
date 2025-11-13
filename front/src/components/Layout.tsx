@@ -6,7 +6,7 @@ import { usePermissions } from '../context/PermissionsContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Breadcrumb, Dropdown, Drawer, Radio, Space, Button, Divider, Tooltip, Switch } from 'antd';
-import { UserOutlined, LogoutOutlined, GlobalOutlined, SettingOutlined, MoonOutlined, SunOutlined, BgColorsOutlined, MenuFoldOutlined, MenuUnfoldOutlined, DashboardOutlined, TeamOutlined, CrownOutlined, KeyOutlined, FileSearchOutlined, AppstoreOutlined, DownOutlined, RightOutlined } from '@ant-design/icons';
+import { UserOutlined, LogoutOutlined, GlobalOutlined, SettingOutlined, MoonOutlined, SunOutlined, BgColorsOutlined, MenuFoldOutlined, MenuUnfoldOutlined, DashboardOutlined, TeamOutlined, CrownOutlined, KeyOutlined, FileSearchOutlined, AppstoreOutlined, DownOutlined, RightOutlined, MenuOutlined, ApartmentOutlined } from '@ant-design/icons';
 import { routes } from '../config/routes';
 import { listMenus } from '../services/menus';
 import BerryLogo from '../assets/berry.svg';
@@ -21,6 +21,8 @@ const iconByKey: Record<string, JSX.Element> = {
   permissions: <KeyOutlined />,
   audits: <FileSearchOutlined />,
   settings: <SettingOutlined />,
+  menus: <MenuOutlined />,
+  tenants: <ApartmentOutlined />,
 };
 
 const SIDEBAR_EXPANDED = 220;

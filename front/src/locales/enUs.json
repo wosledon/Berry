@@ -146,5 +146,7 @@
   "tenant id": "tenant id",
   "tenant name": "tenant name",
   "Search tenant id/name": "Search tenant id/name",
-  "Delete this tenant?": "Delete this tenant?"
+  "Delete this tenant?": "Delete this tenant?",
+  "Report Menus": "Report Menus",
+  "Reported": "Reported"
 }

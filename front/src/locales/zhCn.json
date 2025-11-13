@@ -146,5 +146,7 @@
   "tenant id": "租户标识",
   "tenant name": "租户名称",
   "Search tenant id/name": "搜索租户标识/名称",
-  "Delete this tenant?": "删除此租户？"
+  "Delete this tenant?": "删除此租户？",
+  "Report Menus": "上报菜单",
+  "Reported": "已上报"
 }

@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Breadcrumb, Dropdown, Drawer, Radio, Space, Button, Divider, Tooltip, Switch } from 'antd';
 import { UserOutlined, LogoutOutlined, GlobalOutlined, SettingOutlined, MoonOutlined, SunOutlined, BgColorsOutlined, MenuFoldOutlined, MenuUnfoldOutlined, DashboardOutlined, TeamOutlined, CrownOutlined, KeyOutlined, FileSearchOutlined, AppstoreOutlined, DownOutlined, RightOutlined } from '@ant-design/icons';
 import { routes } from '../config/routes';
+import { listMenus } from '../services/menus';
 import BerryLogo from '../assets/berry.svg';
 import { useQuery } from '@tanstack/react-query';
 import { getUserDetail, User } from '../services/users';
@@ -45,10 +46,10 @@ export function Layout({ children }: { children: ReactNode }) {
     });
   };
   // 菜单渲染辅助函数
-  function renderSidebarMenu(routesList: typeof visibleRoutes) {
+  function renderSidebarMenu(routesList: typeof menuRoutes) {
     return (
       <>
-        {routesList.map(r => {
+        {routesList.map((r: any) => {
           if (!r.children || r.children.length === 0) {
             const active = pathname === r.path;
             return (
@@ -358,13 +359,54 @@ export function Layout({ children }: { children: ReactNode }) {
     }
   });
   const nav = useNavigate();
-  const visibleRoutes = useMemo(() => {
+  const useStaticMenus = hasAny(['menus.manage']);
+  // 动态菜单：普通用户根据后端菜单构建
+  const { data: dynamicMenus } = useQuery({
+    queryKey: ['menus-all', tenantId],
+    enabled: !useStaticMenus && !!tenantId,
+    queryFn: async () => {
+      const res: any = await listMenus({ page: 1, size: 1000 });
+      const items = (res?.items || []) as Array<{ id?: string; parentId?: string | null; name?: string; path?: string; icon?: string | null; permission?: string | null; order?: number }>;
+      // 过滤权限
+      const filtered = items.filter(m => !m.permission || hasAny([m.permission] as any));
+      // 构建树
+      const byId = new Map<string, any>();
+      const roots: any[] = [];
+      filtered.forEach(m => {
+        const node = { path: m.path || '', titleKey: (m.name || ''), iconKey: (m.icon as any) || 'settings', any: m.permission ? [m.permission] : undefined, children: [] as any[] };
+        byId.set(m.id || m.path || Math.random().toString(), node);
+        (node as any)._orig = m;
+      });
+      // 第二轮建立父子
+      byId.forEach((node, key) => {
+        const orig = (node as any)._orig as any;
+        if (orig && orig.parentId && byId.has(orig.parentId)) {
+          byId.get(orig.parentId).children.push(node);
+        } else {
+          roots.push(node);
+        }
+      });
+      // 排序
+      const sortTree = (arr: any[]) => {
+        arr.sort((a, b) => ((a._orig?.order ?? 0) - (b._orig?.order ?? 0)) || (a.titleKey || '').localeCompare(b.titleKey || ''));
+        arr.forEach(n => sortTree(n.children || []));
+      };
+      sortTree(roots);
+      // 清理临时字段
+      const strip = (arr: any[]): any[] => arr.map(n => ({ path: n.path, titleKey: n.titleKey, iconKey: n.iconKey, any: n.any, children: strip(n.children) }));
+      return strip(roots);
+    }
+  });
+  const menuRoutes = useMemo(() => {
+    if (!useStaticMenus && Array.isArray(dynamicMenus) && dynamicMenus.length > 0) {
+      return dynamicMenus as typeof routes;
+    }
     const filter = (items: typeof routes) => items.map(r => ({
       ...r,
       children: r.children?.filter(c => !c.any || hasAny(c.any))
     })).filter(r => !r.any || hasAny(r.any));
     return filter(routes);
-  }, [hasAny]);
+  }, [useStaticMenus, dynamicMenus, hasAny]);
   const titleMap = useMemo(() => {
     const m = new Map<string, string>();
     const walk = (items: typeof routes) => {
@@ -373,9 +415,9 @@ export function Layout({ children }: { children: ReactNode }) {
         if (r.children) walk(r.children as any);
       });
     };
-    walk(routes);
+    walk(menuRoutes);
     return m;
-  }, []);
+  }, [menuRoutes]);
   // 头像逻辑
   const displayName = me?.user?.displayName || me?.user?.username || 'A';
   // 后端暂未提供 avatar 字段，保留扩展点
@@ -491,7 +533,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-4">
           <img src={BerryLogo} alt="Berry" className="w-8 h-8" />
           <nav className="flex items-center gap-2">
-            {visibleRoutes.map(r => {
+            {menuRoutes.map((r: any) => {
               if (!r.children || r.children.length === 0) {
                 return (
                   <Link key={r.path} to={r.path} className={clsx(
@@ -508,7 +550,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </Button>
                   {topSystemOpen && (
                     <div className="absolute left-0 mt-2 bg-white rounded-lg shadow-lg min-w-[160px] z-30">
-                      {r.children.map(c => (
+                      {r.children.map((c: any) => (
                         <Link key={c.path} to={c.path} className={clsx(
                           'block px-4 py-2 text-gray-700 hover:bg-blue-50',
                           pathname === c.path ? 'bg-blue-100 text-blue-700' : ''
@@ -562,14 +604,14 @@ export function Layout({ children }: { children: ReactNode }) {
   // 混合布局模式：顶部导航+侧栏（仅系统分组有子菜单时显示侧栏）
   if (layoutMode === 'mix') {
     // 查找系统分组（假定 key 为 'system'）
-    const systemGroup = visibleRoutes.find(r => r.iconKey === 'system' || r.path === '/system');
+    const systemGroup = (menuRoutes as any).find((r: any) => r.iconKey === 'system' || r.path === '/system');
     const hasSystemChildren = systemGroup && Array.isArray(systemGroup.children) && systemGroup.children.length > 0;
     // 如果没有系统分组子菜单，回退到 side
     if (!hasSystemChildren) {
       // 直接渲染 side 分支
       return (
         <div className="h-screen w-screen bg-gradient-to-br from-gray-100 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-          <Sidebar menu={renderSidebarMenu(visibleRoutes)} />
+          <Sidebar menu={renderSidebarMenu(menuRoutes)} />
           <Header />
           <MainContent />
           <SettingsDrawer />
@@ -594,7 +636,7 @@ export function Layout({ children }: { children: ReactNode }) {
   // side 分支渲染（默认）
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-gray-100 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-      <Sidebar menu={renderSidebarMenu(visibleRoutes)} />
+      <Sidebar menu={renderSidebarMenu(menuRoutes)} />
       <Header />
       <MainContent />
       <SettingsDrawer />

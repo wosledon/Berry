@@ -2,12 +2,12 @@ import { apiClient } from './openapi';
 import type { components, paths } from '../types/api';
 
 export interface Tenant {
-  tenantId?: string;
-  name?: string;
-  description?: string;
+  tenantId?: string | null;
+  name?: string | null;
+  description?: string | null;
   isDeleted?: boolean;
   isDisabled?: boolean;
-  createdAt?: string;
+  createdAt?: string | null;
 }
 
 export interface PagedResult<T> { items: T[]; total: number; page: number; size: number }

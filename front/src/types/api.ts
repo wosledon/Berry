@@ -502,6 +502,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Menus/Import/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ReportMenuItem"][];
+                    "text/json": components["schemas"]["ReportMenuItem"][];
+                    "application/*+json": components["schemas"]["ReportMenuItem"][];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Permissions/Get": {
         parameters: {
             query?: never;
@@ -1588,6 +1627,15 @@ export interface components {
             tenantId?: string | null;
             displayName?: string | null;
             email?: string | null;
+        };
+        ReportMenuItem: {
+            name?: string | null;
+            path?: string | null;
+            icon?: string | null;
+            /** Format: int32 */
+            order?: number | null;
+            permission?: string | null;
+            parentPath?: string | null;
         };
         Role: {
             id?: string | null;

@@ -15,11 +15,11 @@ export const routes: RouteItem[] = [
     titleKey: 'menu.system',
     iconKey: 'system',
     children: [
-      { path: '/menus', titleKey: 'menu.menus', iconKey: 'settings', any: ['menus.view'] },
-      { path: '/tenants', titleKey: 'menu.tenants', iconKey: 'settings', any: ['tenants.view'] },
       { path: '/users', titleKey: 'menu.users', iconKey: 'users', any: ['users.view'] },
       { path: '/roles', titleKey: 'menu.roles', iconKey: 'roles', any: ['roles.view'] },
       { path: '/permissions', titleKey: 'menu.permissions', iconKey: 'permissions', any: ['permissions.view'] },
+      { path: '/menus', titleKey: 'menu.menus', iconKey: 'settings', any: ['menus.view'] },
+      { path: '/tenants', titleKey: 'menu.tenants', iconKey: 'settings', any: ['tenants.view'] },
       { path: '/audits', titleKey: 'menu.audits', iconKey: 'audits', any: ['audit.view'] },
     ],
   },

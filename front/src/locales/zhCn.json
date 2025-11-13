@@ -100,5 +100,18 @@
   "Bulk Delete Selected": "批量删除选中",
   "Bulk deleted": "批量已删除",
   "New Role": "新建角色",
+  "Edit Role": "编辑角色",
+  "New Permission": "新建权限",
+  "Sync": "同步",
+  "Purge Selected": "清除选中",
+  "Yes": "是",
+  "No": "否",
+  "permission name": "权限名称",
+  "role name": "角色名称",
+  "username": "用户名",
+  "display name": "姓名",
+  "email": "邮箱",
+  "Berry Admin": "Berry 管理",
+  "New Role": "新建角色",
   "Edit Role": "编辑角色"
 }

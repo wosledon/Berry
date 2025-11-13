@@ -168,7 +168,7 @@ export function Layout({ children }: { children: ReactNode }) {
           {sidebarCollapsed ? (
             <img src={BerryLogo} alt="Berry" className="w-8 h-8" />
           ) : (
-            <div className="text-2xl font-bold tracking-wide text-blue-600 dark:text-blue-300">Berry Admin</div>
+            <div className="text-2xl font-bold tracking-wide text-blue-600 dark:text-blue-300">{t('Berry Admin')}</div>
           )}
         </div>
         <nav className="space-y-2 flex-1">

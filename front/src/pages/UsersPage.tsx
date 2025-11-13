@@ -28,7 +28,7 @@ export function UsersPage() {
     { title: t('Display Name'), dataIndex: 'displayName' },
     { title: t('Email'), dataIndex: 'email' },
     { title: t('Created At'), dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
-    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">{t('Yes')}</Tag> : <Tag>{t('No')}</Tag> },
     {
       title: t('Actions'),
       width: 160,
@@ -141,13 +141,13 @@ export function UsersPage() {
       >
         <Form form={form} layout="vertical">
           <Form.Item label={t('Username')} name="username" rules={[{ required: true, message: t('Required') }]}>
-            <Input placeholder="username" />
+            <Input placeholder={t('username')} />
           </Form.Item>
           <Form.Item label={t('Display Name')} name="displayName">
-            <Input placeholder="display name" />
+            <Input placeholder={t('display name')} />
           </Form.Item>
           <Form.Item label={t('Email')} name="email" rules={[{ type: 'email', message: t('Invalid email') }]}>
-            <Input placeholder="email" />
+            <Input placeholder={t('email')} />
           </Form.Item>
         </Form>
       </Modal>

@@ -23,7 +23,7 @@ export function AuditLogsPage() {
     { title: t('Path'), dataIndex: 'path', ellipsis: true },
     { title: t('Status'), dataIndex: 'statusCode' },
     { title: t('Elapsed'), dataIndex: 'elapsedMs', render: (v: number) => `${v} ms` },
-    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">{t('Yes')}</Tag> : <Tag>{t('No')}</Tag> },
   ]), [t]);
   return (
     <div>
@@ -54,7 +54,7 @@ export function AuditLogsPage() {
                 <Button danger>{t('Bulk Delete Selected')}</Button>
               </Popconfirm>
               <Popconfirm title={`Purge ${selectedIds.length} logs?`} onConfirm={async () => { await purgeByIdsAuditLogs(selectedIds); notify.success('Purged by ids'); setReloadTick(t=>t+1); setSelectedIds([]); }}>
-                <Button danger type="primary">Purge Selected</Button>
+                <Button danger type="primary">{t('Purge Selected')}</Button>
               </Popconfirm>
             </div>
           )}

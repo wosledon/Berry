@@ -19,7 +19,7 @@ export function PermissionsPage() {
     { title: t('Name'), dataIndex: 'name' },
     { title: t('Description'), dataIndex: 'description' },
     { title: t('Created At'), dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
-    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">{t('Yes')}</Tag> : <Tag>{t('No')}</Tag> },
     {
       title: t('Actions'),
       width: 170,
@@ -91,8 +91,8 @@ export function PermissionsPage() {
         onSelectionChange={(keys) => setSelectedIds(keys)}
         toolbar={(
           <div className="flex items-center gap-2">
-            <Button type="primary" onClick={onNew}>New Permission</Button>
-            <Button onClick={() => syncMut.mutate()} loading={syncMut.isPending}>Sync</Button>
+            <Button type="primary" onClick={onNew}>{t('New Permission')}</Button>
+            <Button onClick={() => syncMut.mutate()} loading={syncMut.isPending}>{t('Sync')}</Button>
             <Input.Search allowClear placeholder={t('Search permission name/description')} style={{ width: 320 }} onSearch={v => setSearch(v)} />
             {selectedIds.length > 0 && (
               <Popconfirm title={`Delete ${selectedIds.length} permissions?`} onConfirm={onDeleteSelected}>
@@ -113,10 +113,10 @@ export function PermissionsPage() {
       >
         <Form form={form} layout="vertical">
           <Form.Item label={t('Name')} name="name" rules={[{ required: true, message: t('Required') }]}>
-            <Input placeholder="permission name" disabled={!!editing?.name} />
+            <Input placeholder={t('permission name')} disabled={!!editing?.name} />
           </Form.Item>
           <Form.Item label={t('Description')} name="description">
-            <Input placeholder="description" />
+            <Input placeholder={t('description')} />
           </Form.Item>
         </Form>
       </Modal>

@@ -100,5 +100,18 @@
   "Bulk Delete Selected": "Bulk Delete Selected",
   "Bulk deleted": "Bulk deleted",
   "New Role": "New Role",
+  "Edit Role": "Edit Role",
+  "New Permission": "New Permission",
+  "Sync": "Sync",
+  "Purge Selected": "Purge Selected",
+  "Yes": "Yes",
+  "No": "No",
+  "permission name": "permission name",
+  "role name": "role name",
+  "username": "username",
+  "display name": "display name",
+  "email": "email",
+  "Berry Admin": "Berry Admin",
+  "New Role": "New Role",
   "Edit Role": "Edit Role"
 }

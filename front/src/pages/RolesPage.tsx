@@ -28,7 +28,7 @@ export function RolesPage() {
     { title: t('Name'), dataIndex: 'name' },
     { title: t('Description'), dataIndex: 'description' },
     { title: t('Created At'), dataIndex: 'createdAt', render: (v?: string) => v ? new Date(v).toLocaleString() : '-' },
-    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">Yes</Tag> : <Tag>No</Tag> },
+    { title: t('Deleted'), dataIndex: 'isDeleted', render: (v?: boolean) => v ? <Tag color="red">{t('Yes')}</Tag> : <Tag>{t('No')}</Tag> },
     {
       title: t('Actions'),
       width: 160,
@@ -142,10 +142,10 @@ export function RolesPage() {
       >
         <Form form={form} layout="vertical">
           <Form.Item label={t('Name')} name="name" rules={[{ required: true, message: t('Required') }]}>
-            <Input placeholder="role name" />
+            <Input placeholder={t('role name')} />
           </Form.Item>
           <Form.Item label={t('Description')} name="description">
-            <Input placeholder="description" />
+            <Input placeholder={t('description')} />
           </Form.Item>
         </Form>
       </Modal>

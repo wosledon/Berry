@@ -1,0 +1,79 @@
+<Project>
+  <!-- 版本控制 -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <PackageVersion>$(Version)</PackageVersion>
+    <Authors>Berry Team</Authors>
+    <Company>Berry Framework</Company>
+    <Product>Berry Framework</Product>
+    <Description>A modular .NET framework for enterprise applications</Description>
+    <Copyright>Copyright © $([System.DateTime]::Now.Year) Berry Team</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/wosledon/Berry</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/wosledon/Berry</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>dotnet;framework;enterprise;modular</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.MD</PackageReadmeFile>
+  </PropertyGroup>
+
+  <!-- 通用属性 -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+  </PropertyGroup>
+
+  <!-- 包发布设置 -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- 包引用版本管理 -->
+  <ItemGroup>
+    <!-- Microsoft Extensions -->
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageReference Update="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Update="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+
+    <!-- ASP.NET Core -->
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+    <PackageReference Update="Microsoft.AspNetCore.Authorization" Version="8.0.10" />
+    <PackageReference Update="Microsoft.AspNetCore.Mvc" Version="8.0.10" />
+    <PackageReference Update="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="8.0.10" />
+    <PackageReference Update="Swashbuckle.AspNetCore" Version="6.5.0" />
+
+    <!-- Entity Framework -->
+    <PackageReference Update="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
+
+    <!-- 其他常用包 -->
+    <PackageReference Update="AutoMapper" Version="13.0.1" />
+    <PackageReference Update="FluentValidation" Version="11.9.2" />
+    <PackageReference Update="MediatR" Version="12.4.1" />
+    <PackageReference Update="Serilog" Version="4.0.0" />
+    <PackageReference Update="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Update="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Update="Serilog.Sinks.File" Version="5.0.0" />
+  </ItemGroup>
+</Project>

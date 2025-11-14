@@ -60,12 +60,31 @@ Berry 是一个现代化的企业级 Web 应用框架，专为快速构建可扩
 
 ## 快速开始
 
-### 系统要求
+### 作为 NuGet 包使用
+
+如果您想在现有项目中使用 Berry 的模块，可以通过 NuGet 安装：
+
+```bash
+# 安装核心包
+dotnet add package Berry.Shared
+dotnet add package Berry.Infrastructure
+
+# 安装功能模块 (按需选择)
+dotnet add package Berry.Modules.Rbac
+dotnet add package Berry.Modules.Tenant
+dotnet add package Berry.Modules.Audit
+dotnet add package Berry.Modules.Caching
+dotnet add package Berry.Modules.Messaging
+```
+
+### 从源码构建
+
+#### 系统要求
 - .NET 8 SDK
 - Node.js 18+
 - PostgreSQL 或 SQLite (开发用)
 
-### 安装与运行
+#### 安装与运行
 
 1. **克隆仓库**
    ```bash
@@ -96,7 +115,7 @@ Berry 是一个现代化的企业级 Web 应用框架，专为快速构建可扩
    npm run gen:api
    ```
 
-### 默认账户
+#### 默认账户
 - 用户名: `admin`
 - 密码: `Admin123!`
 - 租户: `public`
@@ -148,6 +167,7 @@ front/src/
 - [架构与开发指南](docs/architecture.md) - 详细的技术架构和开发流程
 - [对接与使用指南](docs/integration.md) - API 对接和二次开发教程
 - [设计文档](docs/design.md) - 设计理念和路线图
+- [NuGet 包管理](docs/nuget-management.md) - 版本控制和包发布指南
 
 ## 贡献
 

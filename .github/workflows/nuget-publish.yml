@@ -1,0 +1,158 @@
+name: Publish NuGet Packages
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'src/**'
+      - 'Directory.Build.props'
+      - '.github/workflows/nuget-publish.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'src/**'
+      - 'Directory.Build.props'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+          8.0
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
+
+    - name: Pack
+      run: dotnet pack --configuration Release --no-build --output ./packages
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages
+        path: ./packages/
+        retention-days: 7
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: packages
+        path: ./packages
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+          8.0
+
+    - name: Get version from Directory.Build.props
+      id: get-version
+      run: |
+        VERSION=$(grep -oP '<Version>\K[^<]+' Directory.Build.props)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Found version: $VERSION"
+
+    - name: Check if version changed
+      id: check-version
+      run: |
+        # Get the latest tag
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        LATEST_VERSION=${LATEST_TAG#v}
+
+        # Get current version from Directory.Build.props
+        CURRENT_VERSION=$(grep -oP '<Version>\K[^<]+' Directory.Build.props)
+
+        echo "Latest tag version: $LATEST_VERSION"
+        echo "Current version: $CURRENT_VERSION"
+
+        if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
+          echo "version_changed=true" >> $GITHUB_OUTPUT
+          echo "Version changed from $LATEST_VERSION to $CURRENT_VERSION"
+        else
+          echo "version_changed=false" >> $GITHUB_OUTPUT
+          echo "Version not changed"
+        fi
+
+    - name: Publish to NuGet
+      if: steps.check-version.outputs.version_changed == 'true'
+      run: |
+        # Find all .nupkg files and publish them
+        find ./packages -name "*.nupkg" -not -name "*.symbols.nupkg" | while read package; do
+          echo "Publishing $package"
+          dotnet nuget push "$package" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+        done
+
+    - name: Publish symbols to NuGet
+      if: steps.check-version.outputs.version_changed == 'true'
+      run: |
+        # Find all .snupkg files and publish them
+        find ./packages -name "*.snupkg" | while read package; do
+          echo "Publishing symbols $package"
+          dotnet nuget push "$package" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+        done
+
+    - name: Create Git tag
+      if: steps.check-version.outputs.version_changed == 'true'
+      run: |
+        VERSION=$(grep -oP '<Version>\K[^<]+' Directory.Build.props)
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git tag "v$VERSION"
+        git push origin "v$VERSION"
+
+    - name: Create GitHub release
+      if: steps.check-version.outputs.version_changed == 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.get-version.outputs.version }}
+        release_name: Release v${{ steps.get-version.outputs.version }}
+        body: |
+          ## Changes in this release
+
+          ### NuGet Packages Published:
+          - Berry.Shared v${{ steps.get-version.outputs.version }}
+          - Berry.Infrastructure v${{ steps.get-version.outputs.version }}
+          - Berry.Modules.Rbac v${{ steps.get-version.outputs.version }}
+          - Berry.Modules.Tenant v${{ steps.get-version.outputs.version }}
+          - Berry.Modules.Audit v${{ steps.get-version.outputs.version }}
+          - Berry.Modules.Caching v${{ steps.get-version.outputs.version }}
+          - Berry.Modules.Messaging v${{ steps.get-version.outputs.version }}
+
+          ### Installation
+          ```bash
+          dotnet add package Berry.Shared --version ${{ steps.get-version.outputs.version }}
+          dotnet add package Berry.Infrastructure --version ${{ steps.get-version.outputs.version }}
+          # Add other modules as needed
+          ```
+        draft: false
+        prerelease: false

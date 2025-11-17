@@ -15,8 +15,12 @@
     <RepositoryUrl>https://github.com/wosledon/Berry</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>dotnet;framework;enterprise;modular</PackageTags>
-    <PackageReadmeFile>./README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <!-- 包内容 -->
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="README.md" />
+  </ItemGroup>
 
   <!-- 通用属性 -->
   <PropertyGroup>

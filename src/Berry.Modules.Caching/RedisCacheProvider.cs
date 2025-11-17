@@ -16,9 +16,9 @@ internal sealed class RedisCacheProvider : ICacheProvider, IAsyncDisposable
 
     public async Task<T?> GetAsync<T>(string key, CancellationToken ct = default)
     {
-        var val = await _db.StringGetAsync(key);
+        var val = await _db.StringGetAsync(key).ConfigureAwait(false);
         if (!val.HasValue) return default;
-        return System.Text.Json.JsonSerializer.Deserialize<T>(val!);
+        return System.Text.Json.JsonSerializer.Deserialize<T>(val.ToString());
     }
 
     public Task RemoveAsync(string key, CancellationToken ct = default)
@@ -32,10 +32,10 @@ internal sealed class RedisCacheProvider : ICacheProvider, IAsyncDisposable
 
     public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan ttl, CancellationToken ct = default)
     {
-        var cached = await GetAsync<T>(key, ct);
+        var cached = await GetAsync<T>(key, ct).ConfigureAwait(false);
         if (cached is not null) return cached;
-        var val = await factory();
-        await SetAsync(key, val, ttl, ct);
+        var val = await factory().ConfigureAwait(false);
+        await SetAsync(key, val, ttl, ct).ConfigureAwait(false);
         return val;
     }
 

@@ -15,8 +15,7 @@
     <RepositoryUrl>https://github.com/wosledon/Berry</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>dotnet;framework;enterprise;modular</PackageTags>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReadmeFile>README.MD</PackageReadmeFile>
+    <PackageReadmeFile>../../README.MD</PackageReadmeFile>
   </PropertyGroup>
 
   <!-- 通用属性 -->

@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/samples/">
     <Project Path="samples/Berry.Sample/Berry.Sample.csproj" />
+    <Project Path="samples/Berry.RagDemo/Berry.RagDemo.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Berry.Host/Berry.Host.csproj" />

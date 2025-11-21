@@ -20,7 +20,7 @@ namespace Berry.Embeddings.MiniLmL6v2;
 /// MiniLM-L6-v2 ONNX 嵌入提供者
 /// 支持批量嵌入、动态输入适配、回退哈希模式
 /// </summary>
-public class MiniLmEmbeddingProvider : IEmbeddingProvider, IDisposable
+public class MiniLmEmbeddingProvider : IEmbeddingProvider
 {
     private readonly ILogger<MiniLmEmbeddingProvider> _logger;
     private readonly IEmbeddingModelResolver _resolver;
@@ -313,10 +313,5 @@ public class MiniLmEmbeddingProvider : IEmbeddingProvider, IDisposable
         {
             for (int i = 0; i < v.Length; i++) v[i] = (float)(v[i] / norm);
         }
-    }
-
-    public void Dispose()
-    {
-        _session?.Dispose();
     }
 }

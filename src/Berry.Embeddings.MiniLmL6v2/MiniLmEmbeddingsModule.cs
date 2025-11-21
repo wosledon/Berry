@@ -12,6 +12,7 @@ public static class MiniLmEmbeddingsServiceCollectionExtensions
     public static IServiceCollection AddMiniLmEmbeddings(this IServiceCollection services)
     {
         services.AddSingleton<IEmbeddingModelResolver, DirectoryScanningModelResolver>();
+        // 使用无领域增强的 tokenizer（仅基于 vocab + 基础 CJK 拆分）
         services.AddSingleton<IEmbeddingTokenizer, TokenizerBridge>();
         services.AddSingleton<IEmbeddingProvider, MiniLmEmbeddingProvider>();
         return services;

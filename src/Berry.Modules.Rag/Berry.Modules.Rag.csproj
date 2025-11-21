@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Berry.Modules.Rag</PackageId>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="all-MiniLM-L6-v2\config.json" />
+    <None Remove="all-MiniLM-L6-v2\config_sentence_transformers.json" />
+    <None Remove="all-MiniLM-L6-v2\data_config.json" />
+    <None Remove="all-MiniLM-L6-v2\model.onnx" />
+    <None Remove="all-MiniLM-L6-v2\model_O2.onnx" />
+    <None Remove="all-MiniLM-L6-v2\model_O3.onnx" />
+    <None Remove="all-MiniLM-L6-v2\model_O4.onnx" />
+    <None Remove="all-MiniLM-L6-v2\model_qint8_arm64.onnx" />
+    <None Remove="all-MiniLM-L6-v2\model_qint8_avx512.onnx" />
+    <None Remove="all-MiniLM-L6-v2\model_qint8_avx512_vnni.onnx" />
+    <None Remove="all-MiniLM-L6-v2\model_quint8_avx2.onnx" />
+    <None Remove="all-MiniLM-L6-v2\sentence_bert_config.json" />
+    <None Remove="all-MiniLM-L6-v2\special_tokens_map.json" />
+    <None Remove="all-MiniLM-L6-v2\tokenizer.json" />
+    <None Remove="all-MiniLM-L6-v2\tokenizer_config.json" />
+    <None Remove="all-MiniLM-L6-v2\vocab.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\config.json" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\config_sentence_transformers.json" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\data_config.json" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\model.onnx" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\model_O2.onnx" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\model_O3.onnx" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\model_O4.onnx" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\model_qint8_arm64.onnx" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\model_qint8_avx512.onnx" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\model_qint8_avx512_vnni.onnx" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\model_quint8_avx2.onnx" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\sentence_bert_config.json" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\special_tokens_map.json" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\tokenizer.json" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\tokenizer_config.json" />
+    <ApplicationDefinition Include="all-MiniLM-L6-v2\vocab.txt" />
+  </ItemGroup>
+  <!-- Removed erroneous exclusion of ConversationMemory.cs; ensure it is compiled as normal source -->
+  <ItemGroup>
+    <ProjectReference Include="..\Berry.Shared\Berry.Shared.csproj" />
+    <ProjectReference Include="..\Berry.Modules.VectorStore\Berry.Modules.VectorStore.csproj" />
+  </ItemGroup>
+</Project>

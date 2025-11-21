@@ -1,3 +1,4 @@
+using Berry.Abstractions.Embeddings;
 using Berry.Shared.Modules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;

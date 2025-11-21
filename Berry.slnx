@@ -13,8 +13,8 @@
     <Project Path="src/Berry.Shared/Berry.Shared.csproj" />
     <Project Path="src/Berry.Modules.VectorStore/Berry.Modules.VectorStore.csproj" />
     <Project Path="src/Berry.Modules.Rag/Berry.Modules.Rag.csproj" />
+    <Project Path="src/Berry.Abstractions.Embeddings/Berry.Abstractions.Embeddings.csproj" />
+    <Project Path="src/Berry.Embeddings.MiniLmL6v2/Berry.Embeddings.MiniLmL6v2.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/Berry.Modules.Rag.Tests/Berry.Modules.Rag.Tests.csproj" />
-  </Folder>
+  <Folder Name="/tests/" />
 </Solution>

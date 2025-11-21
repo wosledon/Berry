@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Berry.Abstractions.Embeddings;
 
 namespace Berry.Modules.VectorStore;
 
@@ -7,7 +8,9 @@ namespace Berry.Modules.VectorStore;
 public sealed class InMemoryEmbeddingProvider : IEmbeddingProvider
 {
     private const int Dim = 64;
-    public Task<IReadOnlyList<float>> GetEmbeddingAsync(string text, CancellationToken ct = default)
+    public int Dimension => Dim;
+
+    public Task<float[]> EmbedAsync(string text, CancellationToken ct = default)
     {
         using var sha = SHA256.Create();
         var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(text));
@@ -16,6 +19,6 @@ public sealed class InMemoryEmbeddingProvider : IEmbeddingProvider
         {
             floats[i] = bytes[i % bytes.Length] / 255f;
         }
-        return Task.FromResult<IReadOnlyList<float>>(floats);
+        return Task.FromResult(floats);
     }
 }

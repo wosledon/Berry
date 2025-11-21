@@ -8,5 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Berry.Shared\Berry.Shared.csproj" />
+    <ProjectReference Include="..\Berry.Abstractions.Embeddings\Berry.Abstractions.Embeddings.csproj" />
   </ItemGroup>
 </Project>

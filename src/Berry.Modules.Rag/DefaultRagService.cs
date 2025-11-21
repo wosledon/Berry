@@ -1,3 +1,4 @@
+using Berry.Abstractions.Embeddings;
 using Berry.Modules.VectorStore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,7 +18,7 @@ internal sealed class DefaultRagService : IRagService
     private readonly IChunker _chunker;
     private readonly RagOptions _options;
     private readonly ILogger<DefaultRagService> _logger;
-    private readonly Dictionary<string,IReadOnlyList<float>> _embeddingCache = new();
+    private readonly Dictionary<string, float[]> _embeddingCache = new();
     private readonly object _cacheLock = new();
 
     public DefaultRagService(
@@ -41,7 +42,7 @@ internal sealed class DefaultRagService : IRagService
     public async Task<RagQueryResult> QueryAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
         _metrics.IncrementQuery();
-        IReadOnlyList<float> embedding;
+        float[] embedding;
         bool cacheHit = false;
         lock(_cacheLock)
         {
@@ -53,7 +54,7 @@ internal sealed class DefaultRagService : IRagService
         }
         if(!cacheHit)
         {
-            embedding = await _embeddingProvider.GetEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
+            embedding = await _embeddingProvider.EmbedAsync(query, cancellationToken).ConfigureAwait(false);
             lock(_cacheLock){ _embeddingCache[query]= embedding; }
         }
         var retrieved = await _vectorStore.SearchAsync(embedding, _options.MaxRetrieve, _options.SimilarityThreshold, cancellationToken).ConfigureAwait(false);
@@ -73,7 +74,7 @@ internal sealed class DefaultRagService : IRagService
         var chunks = _chunker.Chunk(content);
         foreach (var chunk in chunks)
         {
-            var embedding = await _embeddingProvider.GetEmbeddingAsync(chunk, cancellationToken).ConfigureAwait(false);
+            var embedding = await _embeddingProvider.EmbedAsync(chunk, cancellationToken).ConfigureAwait(false);
             await _vectorStore.UpsertAsync(new VectorDocument
             {
                 Id = (externalId ?? Guid.NewGuid().ToString("N")) + ":" + Guid.NewGuid().ToString("N"),

@@ -1,6 +1,10 @@
 using Berry.Modules.VectorStore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.IO;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Berry.Modules.Rag;
 
@@ -76,6 +80,22 @@ internal sealed class DefaultRagService : IRagService
                 Content = chunk,
                 Embedding = embedding
             }, cancellationToken).ConfigureAwait(false);
+        }
+    }
+    public async Task BulkIngestDirectoryAsync(string directory, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory)) return;
+        var files = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(f => f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
+                     || f.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+                     || f.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase));
+        foreach (var file in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string content;
+            try { content = await File.ReadAllTextAsync(file, cancellationToken).ConfigureAwait(false); }
+            catch { continue; }
+            await IngestAsync(content, Path.GetFileName(file), cancellationToken).ConfigureAwait(false);
         }
     }
     public RagStats GetStats() => _metrics.Snapshot();

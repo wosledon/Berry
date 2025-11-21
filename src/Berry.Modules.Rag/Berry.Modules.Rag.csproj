@@ -42,6 +42,12 @@
     <ApplicationDefinition Include="all-MiniLM-L6-v2\tokenizer_config.json" />
     <ApplicationDefinition Include="all-MiniLM-L6-v2\vocab.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.19.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="all-MiniLM-L6-v2\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
   <!-- Removed erroneous exclusion of ConversationMemory.cs; ensure it is compiled as normal source -->
   <ItemGroup>
     <ProjectReference Include="..\Berry.Shared\Berry.Shared.csproj" />

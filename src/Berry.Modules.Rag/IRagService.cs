@@ -6,6 +6,7 @@ public interface IRagService
 {
     Task<RagQueryResult> QueryAsync(string userId, string query, CancellationToken cancellationToken = default);
     Task IngestAsync(string content, string? externalId = null, CancellationToken cancellationToken = default);
+    Task BulkIngestDirectoryAsync(string directory, CancellationToken cancellationToken = default);
     RagStats GetStats();
 }
 

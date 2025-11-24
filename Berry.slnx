@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/samples/">
     <Project Path="samples/Berry.Sample/Berry.Sample.csproj" />
+    <Project Path="samples/Berry.RagDemo/Berry.RagDemo.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Berry.Host/Berry.Host.csproj" />
@@ -11,5 +12,10 @@
     <Project Path="src/Berry.Modules.Rbac/Berry.Modules.Rbac.csproj" />
     <Project Path="src/Berry.Modules.Tenant/Berry.Modules.Tenant.csproj" />
     <Project Path="src/Berry.Shared/Berry.Shared.csproj" />
+    <Project Path="src/Berry.Modules.VectorStore/Berry.Modules.VectorStore.csproj" />
+    <Project Path="src/Berry.Modules.Rag/Berry.Modules.Rag.csproj" />
+    <Project Path="src/Berry.Abstractions.Embeddings/Berry.Abstractions.Embeddings.csproj" />
+    <Project Path="src/Berry.Embeddings.MiniLmL6v2/Berry.Embeddings.MiniLmL6v2.csproj" />
   </Folder>
+  <Folder Name="/tests/" />
 </Solution>

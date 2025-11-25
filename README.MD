@@ -120,6 +120,34 @@ dotnet add package Berry.Modules.Messaging
 - 密码: `Admin123!`
 - 租户: `public`
 
+## RAG 模块与示例
+
+本仓库包含一个轻量级的 RAG（检索增强生成）演示与模块实现，用于演示如何将向量检索整合到业务中：
+
+- 模块文档: `docs/develop/rag.md`（说明 Ingest/Query 流程、配置项与扩展点）
+- 本地示例: `demos/RAGDemo` 包含完整的 demo 程序、Tokenizer/ONNX 模型与 InMemory 向量存储实现。
+
+快速使用说明（演示）:
+
+1. 下载 MiniLM 模型与 tokenizer 到 `demos/RAGDemo/models/all-MiniLM-L6-v2`（或使用仓库已包含的模型文件夹）。
+2. 进入 demo 目录并运行：
+
+```powershell
+cd demos/RAGDemo
+dotnet run --project RAGDemo.csproj
+```
+
+3. 使用 Swagger 或调用 API:
+
+- `POST /api/ingest` 上传或摄入文档
+- `GET  /api/search?query=你的查询&minScore=0.3` 执行检索
+
+注意：
+- 如果你在迁移或改动 tokenizer/embedding 实现后，请重新摄入（re-ingest）文档以确保向量一致性。
+- demo 中包含 tokenizer.json 和 vocab.txt，优先使用 tokenizer.json 能最大程度还原训练时的 tokenization 行为。
+
+如需将 RAG 集成到你的宿主程序，请阅读 `docs/develop/rag.md` 并在 DI 中替换 `IEmbeddingProvider` / `IVectorStore`。
+
 ## 架构设计
 
 ### 后端架构

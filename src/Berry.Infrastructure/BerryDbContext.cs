@@ -6,7 +6,7 @@ using Berry.Shared.Security;
 
 namespace Berry.Infrastructure;
 
-public sealed class BerryDbContext : DbContext
+public class BerryDbContext : DbContext
 {
     private readonly string? _tenantId;
     private readonly string? _userId;
@@ -130,10 +130,19 @@ public sealed class BerryDbContext : DbContext
             b.Property(x => x.Description).HasMaxLength(256);
             b.HasIndex(x => x.Name);
         });
+        // 允许派生上下文在基础配置后继续添加配置
+        OnModelCreatingPartial(modelBuilder);
     }
 
-    private void ConfigureBaseEntity<T>(ModelBuilder modelBuilder) where T : BaseEntity
+    /// <summary>
+    /// 派生类可覆写进行额外实体配置。
+    /// </summary>
+    /// <param name="modelBuilder">EF 模型构建器</param>
+    protected virtual void OnModelCreatingPartial(ModelBuilder modelBuilder) { }
+
+    protected virtual void ConfigureBaseEntity<T>(ModelBuilder modelBuilder) where T : BaseEntity
     {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
         modelBuilder.Entity<T>().HasQueryFilter(e => !e.IsDeleted && (_tenantId == null || e.TenantId == _tenantId));
     }
 
@@ -149,7 +158,7 @@ public sealed class BerryDbContext : DbContext
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
-    private void ApplyAuditing()
+    protected virtual void ApplyAuditing()
     {
         var utcNow = DateTime.UtcNow;
         foreach (var entry in ChangeTracker.Entries())
